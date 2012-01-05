@@ -1,0 +1,141 @@
+#lang mischief/racket
+
+(provide
+  define/debug
+  debug
+  debug*
+  debug-expr
+  debug-value
+  dprintf
+  call-with-debug-frame
+  call-and-debug)
+
+(require
+  (for-syntax
+    mischief/racket))
+
+(define-syntax (debug stx)
+
+  (define-splicing-syntax-class actual
+    (pattern (~seq value:expr)
+      #:attr [key-prefix 1] '())
+    (pattern (~seq key:keyword value:expr)
+      #:attr [key-prefix 1] (list (@ key))))
+
+  (syntax-parse stx
+    [(_ . (~and app (fun:expr arg:actual ...)))
+     (define/syntax-parse fun-var (fresh))
+     (define/syntax-parse [arg-var ...]
+       (map (thunk* (fresh)) (@ arg.value)))
+     (define/syntax-parse {[arg-key/var ...] ...}
+       #'{[arg.key-prefix ... arg-var] ...})
+     (define/syntax-parse desc
+       (format "~s~a"
+         (to-datum (@ app))
+         (source-location->suffix (@ app))))
+     #'(call-and-debug 'desc
+         (lambda ()
+           (let {[fun-var (debug-expr fun)]
+                 [arg-var (debug-expr arg.value)]
+                 ...}
+             (fun-var arg-key/var ... ...))))]))
+
+(define-syntax (debug* stx)
+  (syntax-parse stx
+    [(_ . e:expr)
+     #'(debug-expr e)]))
+
+(define-syntax (debug-expr stx)
+  (syntax-parse stx
+    [(_ e:expr)
+     (define/syntax-parse desc
+       (format "~s~a"
+         (to-datum (@ e))
+         (source-location->suffix (@ e))))
+     #'(call-and-debug 'desc
+         (lambda () (#%expression e)))]))
+
+(define-syntax (define/debug stx)
+  (syntax-parse stx
+    [(_ (name:id . args:kw-formals) . body:block-body)
+     (define/syntax-parse desc
+       (format "~s~a"
+         (syntax-e (@ name))
+         (source-location->suffix stx)))
+     (define/syntax-parse [arg-desc ...]
+       (for/list {[arg-id (in-list (@ args.formal-id))]}
+         (format "Argument ~s:" (syntax-e arg-id))))
+     #'(define (name . args)
+         (call-and-debug 'desc
+           (lambda ()
+             (debug-value 'arg-desc args.formal-id) ...
+             . body)))]
+    [(_ name:id body:expr)
+     (define/syntax-parse desc
+       (format "~s~a"
+         (syntax-e (@ name))
+         (source-location->suffix stx)))
+     #'(define name
+         (call-and-debug 'desc
+           (lambda () (#%expression body))))]))
+
+(define (call-and-debug desc-str thunk)
+  (call-with-debug-frame desc-str
+    (lambda ()
+      (call-with-values
+        (lambda ()
+          (with-handlers
+              {[exn:fail?
+                (lambda (x)
+                  (debug-value "Raised exception:" x)
+                  (raise x))]}
+            (thunk)))
+        (lambda results
+          (debug-values "Result:" results)
+          (apply values results))))))
+
+(define (debug-value desc x)
+  (debug-values desc (list x)))
+
+(define (debug-values desc xs)
+  (define indentation 2)
+  (dprintf "~a\n~a~a"
+    desc
+    (make-string indentation #\space)
+    (stylish-format-expr
+      (match xs
+        [(list x) (stylish-value->expr x)]
+        [xs `(values ,@(map stylish-value->expr xs))])
+      #:left indentation
+      #:columns (- (current-stylish-print-columns)
+                   (* 2 (current-debug-depth))
+                   indentation))))
+
+(define (values->string xs)
+  (match xs
+    [(list x) (format "~v" x)]
+    [_ (format "(values~a)"
+         (apply string-append
+           (for/list {[x (in-list xs)]}
+             (format " ~v" x))))]))
+
+(define (call-with-debug-frame desc-str thunk)
+  (define (enter) (dprintf ">> ~a" desc-str))
+  (define (exit) (dprintf "<< ~a" desc-str))
+  (define (work)
+    (parameterize {[current-debug-depth (add1 (current-debug-depth))]}
+      (thunk)))
+  (dynamic-wind enter work exit))
+
+(define (dprintf fmt . args)
+  (eprintf "~a"
+    (indent (apply format fmt args))))
+
+(define (indent str [n (* 2 (current-debug-depth))])
+  (define indentation (make-string n #\space))
+  (apply string-append
+    (for/list {[line (in-list (string-lines str))]}
+      (format "~a~a\n" indentation line))))
+
+(define current-debug-depth
+  (make-parameter 0))

@@ -1,0 +1,180 @@
+#lang racket/base
+
+(provide
+  for/filter-list for*/filter-list
+  for/filter-lists for*/filter-lists
+  for/append-list for*/append-list
+  for/append-lists for*/append-lists
+  for/fold/lists for*/fold/lists
+  for/fold/filter-lists for*/fold/filter-lists
+  for/fold/append-lists for*/fold/append-lists
+  define/for/fold define/for*/fold
+  define/for/lists define/for*/lists
+  define/for/filter-lists define/for*/filter-lists
+  define/for/append-lists define/for*/append-lists
+  define/for/fold/lists define/for*/fold/lists
+  define/for/fold/filter-lists define/for*/fold/filter-lists
+  define/for/fold/append-lists define/for*/fold/append-lists)
+
+(require
+  (for-syntax
+    racket/base
+    racket/block
+    racket/syntax
+    syntax/parse
+    syntax/parse/experimental/specialize
+    mischief/syntax/parse)
+  racket/list
+  racket/block
+  mischief/syntax/shorthand)
+
+(define-syntax (define-loops stx)
+  (syntax-parse stx
+    [(_ (name:id loop:id . pat) var-tem loop-tem)
+     (define/syntax-parse
+         {for/name for*/name define/for/name define/for*/name}
+       (for/list {[prefix (in-list '(for for* define/for define/for*))]}
+         (format-id #'name "~a/~a" prefix #'name)))
+     #'(define-syntaxes
+           {for/name for*/name define/for/name define/for*/name}
+         (block
+           (define-syntax-class (args loop-id)
+             #:attributes {loop-body define-body}
+             (pattern pat
+               #:attr loop-body (with-syntax {[loop loop-id]} #'loop-tem)
+               #:attr define-body #'(define-values var-tem loop-body)))
+           (define-syntax-class/specialize args/for (args #'for/fold))
+           (define-syntax-class/specialize args/for* (args #'for*/fold))
+           (values
+             (syntax-parser [(_ . :args/for) #'loop-body])
+             (syntax-parser [(_ . :args/for*) #'loop-body])
+             (syntax-parser [(_ . :args/for) #'define-body])
+             (syntax-parser [(_ . :args/for*) #'define-body]))))]))
+
+(define-shorthand
+  (for/filter-list clauses:fold-clauses . body:block-body)
+  (for/filter-lists {xs} clauses . body))
+
+(define-shorthand
+  (for*/filter-list clauses:fold-clauses . body:block-body)
+  (for*/filter-lists {xs} clauses . body))
+
+(define-loops
+  (filter-lists loop/fold {(~and xs:id x:temp-id rxs:temp-id) ...}
+    clauses:fold-clauses . body:block-body)
+  {xs ...}
+  (block
+    (define-values {rxs.temp ...}
+      (loop/fold {[rxs.temp '()] ...} clauses
+        (define-values {x.temp ...} (block . body))
+        (values (cons x.temp rxs.temp) ...)))
+    (define-values {xs ...}
+      (for/fold {[xs '()] ...} {[x.temp (in-list rxs.temp)] ...}
+        (values (if x.temp (cons x.temp xs) xs) ...)))
+    (values xs ...)))
+
+(define-shorthand
+  (for/append-list clauses:fold-clauses . body:block-body)
+  (for/append-lists {xs} clauses . body))
+
+(define-shorthand
+  (for*/append-list clauses:fold-clauses . body:block-body)
+  (for*/append-lists {xs} clauses . body))
+
+(define-loops
+  (append-lists loop/fold {(~and xs:id xs0:temp-id rxss:temp-id) ...}
+    clauses:fold-clauses . body:block-body)
+  {xs ...}
+  (block
+    (define-values {rxss.temp ...}
+      (loop/fold {[rxss.temp '()] ...} clauses
+        (define-values {xs0.temp ...} (block . body))
+        (values (cons xs0.temp rxss.temp) ...)))
+    (define-values {xs ...}
+      (for/fold {[xs '()] ...} {[xs0.temp (in-list rxss.temp)] ...}
+        (values (append xs0.temp xs) ...)))
+    (values xs ...)))
+
+(define-shorthand
+  (define/for/lists {xs:id ...} clauses:fold-clauses . body:block-body)
+  (define/for/list-values {xs ...} clauses . body))
+
+(define-shorthand
+  (define/for*/lists {xs:id ...} clauses:fold-clauses . body:block-body)
+  (define/for*/list-values {xs ...} clauses . body))
+
+(define-loops
+  (list-values loop/fold {(~and xs:id x:temp-id rxs:temp-id) ...}
+    clauses:fold-clauses . body:block-body)
+  {xs ...}
+  (block
+    (define-values {rxs.temp ...}
+      (loop/fold {[rxs.temp '()] ...} clauses
+        (define-values {x.temp ...} (block . body))
+        (values (cons x.temp rxs.temp) ...)))
+    (define-values {xs ...}
+      (for/fold {[xs '()] ...} {[x.temp (in-list rxs.temp)] ...}
+        (values (cons x.temp xs) ...)))
+    (values xs ...)))
+
+(define-shorthand
+  (define/for/fold {[x:id e:expr] ...} clauses:fold-clauses . body:block-body)
+  (define/for/fold-values {[x e] ...} clauses . body))
+
+(define-shorthand
+  (define/for*/fold {[x:id e:expr] ...} clauses:fold-clauses . body:block-body)
+  (define/for*/fold-values {[x e] ...} clauses . body))
+
+(define-loops
+  (fold-values loop/fold {[x:id e:expr] ...}
+    clauses:fold-clauses . body:block-body)
+  {x ...}
+  (loop/fold {[x e] ...} clauses . body))
+
+(define-loops
+  (fold/lists loop/fold
+      {[(~and x:id x*:temp-id) e:expr] ...}
+      {(~and ys:id y:temp-id rys:temp-id) ...}
+    clauses:fold-clauses . body:block-body)
+  {x ... ys ...}
+  (block
+    (define-values {x ... rys.temp ...}
+      (loop/fold {[x e] ... [rys.temp '()] ...} clauses
+        (define-values {x*.temp ... y.temp ...} (block . body))
+        (values x*.temp ... (cons y.temp rys.temp) ...)))
+    (define-values {ys ...}
+      (for/fold {[ys '()] ...} {[y.temp (in-list rys.temp)] ...}
+        (values (cons y.temp ys) ...)))
+    (values x ... ys ...)))
+
+(define-loops
+  (fold/filter-lists loop/fold
+      {[(~and x:id x*:temp-id) e:expr] ...}
+      {(~and ys:id y:temp-id rys:temp-id) ...}
+    clauses:fold-clauses . body:block-body)
+  {x ... ys ...}
+  (block
+    (define-values {x ... rys.temp ...}
+      (loop/fold {[x e] ... [rys.temp '()] ...} clauses
+        (define-values {x*.temp ... y.temp ...} (block . body))
+        (values x*.temp ... (if y.temp (cons y.temp rys.temp) rys.temp) ...)))
+    (define-values {ys ...}
+      (for/fold {[ys '()] ...} {[y.temp (in-list rys.temp)] ...}
+        (values (cons y.temp ys) ...)))
+    (values x ... ys ...)))
+
+(define-loops
+  (fold/append-lists loop/fold
+      {[(~and x:id x*:temp-id) e:expr] ...}
+      {(~and ys:id ys0:temp-id ryss:temp-id) ...}
+    clauses:fold-clauses . body:block-body)
+  {x ... ys ...}
+  (block
+    (define-values {x ... ryss.temp ...}
+      (loop/fold {[x e] ... [ryss.temp '()] ...} clauses
+        (define-values {x*.temp ... ys0.temp ...} (block . body))
+        (values x*.temp ... (cons ys0.temp ryss.temp) ...)))
+    (define-values {ys ...}
+      (for/fold {[ys '()] ...} {[ys0.temp (in-list ryss.temp)] ...}
+        (values (append ys0.temp ys) ...)))
+    (values x ... ys ...)))

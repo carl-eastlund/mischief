@@ -1,0 +1,45 @@
+#lang racket/base
+
+(provide
+  define-shorthand
+  define-aliases
+  define-alias)
+
+(require
+  (for-syntax
+    racket/base
+    racket/syntax
+    syntax/parse
+    mischief/syntax/transform))
+
+(define-syntax (define-shorthand stx)
+  (syntax-parse stx
+    [(_ (name:id . pattern) template)
+     (syntax/loc stx
+       (define-syntax name
+         (macro-transformer
+           (lambda (stx)
+             (syntax-parse stx
+               [(_ . pattern) (syntax/loc stx template)])))))]
+    [(_ name:id [pattern template] ...)
+     (syntax/loc stx
+       (define-syntax name
+         (macro-transformer
+           (lambda (stx)
+             (syntax-parse stx
+               [pattern (syntax/loc stx template)]
+               ...)))))]))
+
+(define-syntax (define-aliases stx)
+  (syntax-parse stx
+    [(_ [alias:id name:id] ...)
+     (syntax/loc stx
+       (define-syntaxes {alias ...}
+         (rename-transformers #'name ...)))]))
+
+(define-syntax (define-alias stx)
+  (syntax-parse stx
+    [(_ alias:id name:id)
+     (syntax/loc stx
+       (define-syntax alias
+         (rename-transformer #'name)))]))
