@@ -1,4 +1,4 @@
-#lang mischief/racket
+#lang racket/base
 
 (provide
   define/debug
@@ -12,7 +12,14 @@
 
 (require
   (for-syntax
-    mischief/racket))
+    racket/base
+    racket/syntax
+    syntax/parse
+    mischief/syntax/srcloc
+    mischief/syntax/parse)
+  racket/match
+  mischief/racket/string
+  mischief/racket/stylish)
 
 (define-syntax (debug stx)
 
@@ -20,19 +27,19 @@
     (pattern (~seq value:expr)
       #:attr [key-prefix 1] '())
     (pattern (~seq key:keyword value:expr)
-      #:attr [key-prefix 1] (list (@ key))))
+      #:attr [key-prefix 1] (list (attribute key))))
 
   (syntax-parse stx
     [(_ . (~and app (fun:expr arg:actual ...)))
-     (define/syntax-parse fun-var (fresh))
+     (define/syntax-parse fun-var (generate-temporary (attribute fun)))
      (define/syntax-parse [arg-var ...]
-       (map (thunk* (fresh)) (@ arg.value)))
+       (map generate-temporary (attribute arg.value)))
      (define/syntax-parse {[arg-key/var ...] ...}
        #'{[arg.key-prefix ... arg-var] ...})
      (define/syntax-parse desc
        (format "~s~a"
-         (to-datum (@ app))
-         (source-location->suffix (@ app))))
+         (datum->syntax #false (attribute app))
+         (source-location->suffix (attribute app))))
      #'(call-and-debug 'desc
          (lambda ()
            (let {[fun-var (debug-expr fun)]
@@ -50,8 +57,8 @@
     [(_ e:expr)
      (define/syntax-parse desc
        (format "~s~a"
-         (to-datum (@ e))
-         (source-location->suffix (@ e))))
+         (datum->syntax #false (attribute e))
+         (source-location->suffix (attribute e))))
      #'(call-and-debug 'desc
          (lambda () (#%expression e)))]))
 
@@ -60,10 +67,10 @@
     [(_ (name:id . args:kw-formals) . body:block-body)
      (define/syntax-parse desc
        (format "~s~a"
-         (syntax-e (@ name))
+         (syntax-e (attribute name))
          (source-location->suffix stx)))
      (define/syntax-parse [arg-desc ...]
-       (for/list {[arg-id (in-list (@ args.formal-id))]}
+       (for/list {[arg-id (in-list (attribute args.formal-id))]}
          (format "Argument ~s:" (syntax-e arg-id))))
      #'(define (name . args)
          (call-and-debug 'desc
@@ -73,7 +80,7 @@
     [(_ name:id body:expr)
      (define/syntax-parse desc
        (format "~s~a"
-         (syntax-e (@ name))
+         (syntax-e (attribute name))
          (source-location->suffix stx)))
      #'(define name
          (call-and-debug 'desc
