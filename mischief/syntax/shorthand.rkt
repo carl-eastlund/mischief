@@ -9,22 +9,21 @@
   (for-syntax
     racket/base
     racket/syntax
-    syntax/parse
-    mischief/syntax/transform))
+    syntax/parse))
 
 (define-syntax (define-shorthand stx)
   (syntax-parse stx
     [(_ (name:id . pattern) template)
      (syntax/loc stx
        (define-syntax name
-         (macro-transformer
+         (make-set!-transformer
            (lambda (stx)
              (syntax-parse stx
                [(_ . pattern) (syntax/loc stx template)])))))]
     [(_ name:id [pattern template] ...)
      (syntax/loc stx
        (define-syntax name
-         (macro-transformer
+         (make-set!-transformer
            (lambda (stx)
              (syntax-parse stx
                [pattern (syntax/loc stx template)]
@@ -35,11 +34,11 @@
     [(_ [alias:id name:id] ...)
      (syntax/loc stx
        (define-syntaxes {alias ...}
-         (rename-transformers #'name ...)))]))
+         (values (make-rename-transformer #'name) ...)))]))
 
 (define-syntax (define-alias stx)
   (syntax-parse stx
     [(_ alias:id name:id)
      (syntax/loc stx
        (define-syntax alias
-         (rename-transformer #'name)))]))
+         (make-rename-transformer #'name)))]))

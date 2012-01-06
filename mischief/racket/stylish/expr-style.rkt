@@ -13,7 +13,6 @@
   racket/set
   racket/promise
   mischief/racket/define
-  mischief/syntax/transform
   mischief/racket/struct
   mischief/racket/stylish/stylish)
 
@@ -408,7 +407,7 @@
 ;; Convert Syntax
 
 (define (convert-syntax stx st)
-  (define datum (to-datum stx))
+  (define datum (syntax->datum stx))
   (if (stylish-quotable-value? datum st)
     (list 'syntax datum)
     (list 'datum->syntax '_

@@ -19,9 +19,10 @@
   racket/syntax
   syntax/parse
   syntax/srcloc
+  mischief/syntax/fold
+  mischief/racket/visitor
   (for-template
-    racket/base)
-  mischief/racket/visitor)
+    racket/base))
 
 (define (syntax-local-variable-reference)
   (syntax-local-eval
@@ -43,15 +44,10 @@
     (raise-type-error name "syntax or #false" x)))
 
 (define (to-datum x)
-  ((datum-visitor) x))
-
-(define (datum-visitor)
-  (visitor-combine
-    (make-memoizing-visitor)
-    (make-uniform-visitor syntax?
-      (lambda (recur stx)
-        (recur (syntax-e stx))))
-    map-visitor))
+  (define ht (make-weak-hasheq))
+  (datum-fold x
+    #:short-circuit (lambda (v f) (hash-ref! ht v f))
+    #:syntax (lambda (stx datum) datum)))
 
 (define (quote-transformer x)
   #`(quasiquote #,(to-syntax ((quote-visitor) x))))
@@ -61,16 +57,14 @@
     (make-memoizing-visitor)
     (make-uniform-leaf-visitor syntax?
       (lambda (stx)
-        #`(unquote (quote-syntax #,stx))))
-    map-visitor
-    (make-uniform-visitor path?
-      (lambda (rec path)
-        (with-syntax {[b (rec (path->bytes path))]
-                      [t (rec (path-convention-type path))]}
-          #'(unquote
-              (bytes->path
-                (quasiquote b)
-                (quasiquote t))))))))
+        #`(unquote (quote-syntax #,(to-syntax stx)))))
+    (make-uniform-leaf-visitor path?
+      (lambda (path)
+        #`(unquote
+            (bytes->path
+              (quote #,(path->bytes path))
+              (quote #,(path-convention-type path))))))
+    map-visitor))
 
 (define (fresh-mark)
   (make-syntax-introducer))

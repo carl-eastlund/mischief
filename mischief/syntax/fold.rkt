@@ -4,7 +4,9 @@
   datum-fold)
 
 (require
-  racket/promise)
+  racket/promise
+  mischief/racket/for
+  mischief/racket/function)
 
 (define (datum-fold x
           #:short-circuit [process-short-circuit default-process-short-circuit]
@@ -14,9 +16,9 @@
           #:box [process-box default-process-box]
           #:prefab [process-prefab default-process-prefab]
           #:hash [process-hash default-process-hash]
-          #:hash-eq [process-hash-eq (lambda (x) (process-hash (hasheq) x))]
-          #:hash-eqv [process-hash-eqv (lambda (x) (process-hash (hasheqv) x))]
-          #:hash-equal [process-hash-equal (lambda (x) (process-hash (hash) x))]
+          #:hash-eq [process-hash-eq (arg+ process-hash (hasheq))]
+          #:hash-eqv [process-hash-eqv (arg+ process-hash (hasheqv))]
+          #:hash-equal [process-hash-equal (arg+ process-hash (hash))]
           #:syntax [process-syntax default-process-syntax]
           #:other [process-other default-process-other])
 
@@ -43,13 +45,12 @@
            (map outer-loop
              (cdr (vector->list (struct->vector x))))))]
       [(hash? x)
-       (define alist
-         (for/list {[(k v) (in-hash x)]}
-           (cons k (outer-loop v))))
+       (define/for/lists {ks vs} {[(k v) (in-hash x)]}
+         (values k (outer-loop v)))
        (cond
-         [(hash-eq? x) (process-hash-eq alist)]
-         [(hash-eqv? x) (process-hash-eqv alist)]
-         [(hash-equal? x) (process-hash-equal alist)])]
+         [(hash-eq? x) (process-hash-eq ks vs)]
+         [(hash-eqv? x) (process-hash-eqv ks vs)]
+         [(hash-equal? x) (process-hash-equal ks vs)])]
       [(syntax? x)
        (process-syntax
          (datum->syntax x (gensym) x x x)
@@ -64,8 +65,6 @@
 (define (default-process-vector xs) (list->vector xs))
 (define (default-process-box x) (box x))
 (define (default-process-prefab k vs) (apply make-prefab-struct k vs))
-(define (default-process-hash ht alist)
-  (for/fold {[ht ht]} {[p (in-list alist)]}
-    (hash-set ht (car p) (cdr p))))
+(define (default-process-hash ht ks vs) (foldl hash-set ht ks vs))
 (define (default-process-syntax stx v) (datum->syntax stx v stx stx stx))
 (define (default-process-other x) x)
