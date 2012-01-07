@@ -21,7 +21,6 @@
   print-style?
   empty-print-style
   current-print-style
-  port->print-style
   set-print-style-default-printer
   set-print-style-preserve-cache?
   print-style-extension?
@@ -67,7 +66,7 @@
 
 (define (stylish-print v [port (current-output-port)]
           #:expr-style [est (current-expr-style)]
-          #:print-style [pst (port->print-style port)]
+          #:print-style [pst (current-print-style)]
           #:left [left 0]
           #:right [right 0]
           #:columns [columns (current-stylish-print-columns)])
@@ -75,19 +74,22 @@
   (log-debugf "\n===== stylish-print =====\n")
   (log-debugf "Convert:\n~e\n" v)
   (log-debugf "Print:\n~e\n" e)
-  (print-expression 'stylish-print pst e port left right columns))
+  (print-to-stylish-port 'stylish-print port left right columns
+    (lambda (port)
+      (print-expression 'stylish-print e pst port))))
 
 (define (stylish-println v [port (current-output-port)]
           #:expr-style [est (current-expr-style)]
-          #:print-style [pst (port->print-style port)]
+          #:print-style [pst (current-print-style)]
           #:left [left 0]
-          #:right [right 0]
           #:columns [columns (current-stylish-print-columns)])
   (define e (value->expression 'stylish-println v est))
   (log-debugf "\n===== stylish-println =====\n")
   (log-debugf "Convert:\n~e\n" v)
   (log-debugf "Print:\n~e\n" e)
-  (print-expression 'stylish-println pst e port left right columns)
+  (print-to-stylish-port 'stylish-println port left 0 columns
+    (lambda (port)
+      (print-expression 'stylish-println e pst port)))
   (newline port))
 
 (define (stylish-value->string v
@@ -100,7 +102,9 @@
   (define s
     (call-with-output-string
       (lambda (port)
-        (print-expression 'stylish-value->string pst e port left right columns))))
+        (print-to-stylish-port 'stylish-value->string port left right columns
+          (lambda (port)
+            (print-expression 'stylish-value->string e pst port))))))
   (log-debugf "\n===== stylish-value->string =====\n")
   (log-debugf "Convert:\n~e\n" v)
   (log-debugf "Print:\n~e\n" e)
@@ -108,18 +112,21 @@
   s)
 
 (define (stylish-print-expr e [port (current-output-port)]
-          #:print-style [pst (port->print-style port)]
+          #:print-style [pst (current-print-style)]
           #:left [left 0]
           #:right [right 0]
           #:columns [columns (current-stylish-print-columns)])
-  (print-expression 'stylish-print-expr pst e port left right columns))
+  (print-to-stylish-port 'stylish-print-expr port left right columns
+    (lambda (port)
+      (print-expression 'stylish-print-expr e pst port))))
 
 (define (stylish-println-expr e [port (current-output-port)]
-          #:print-style [pst (port->print-style port)]
+          #:print-style [pst (current-print-style)]
           #:left [left 0]
-          #:right [right 0]
           #:columns [columns (current-stylish-print-columns)])
-  (print-expression 'stylish-println-expr pst e port left right columns)
+  (print-to-stylish-port 'stylish-println-expr port left 0 columns
+    (lambda (port)
+      (print-expression 'stylish-println-expr e pst port)))
   (newline port))
 
 (define (stylish-expr->string e
@@ -129,24 +136,23 @@
           #:columns [columns (current-stylish-print-columns)])
   (call-with-output-string
     (lambda (port)
-      (print-expression 'stylish-print-expr pst e port left right columns))))
+      (print-to-stylish-port 'stylish-expr->string port left right columns
+        (lambda (port)
+          (print-expression 'stylish-expr->string e pst port))))))
 
-(define (stylish-print-delimited port thunk)
-  (print-delimited 'stylish-print-delimited port thunk))
+(define (stylish-print-delimited port proc)
+  (print-to-stylish-port 'stylish-print-delimited port 0 0
+    (current-stylish-print-columns)
+    proc))
 
 (define (stylish-print-separator port [indent 0] [wide? #t])
-  (print-separator 'stylish-print-separator indent wide? port))
+  (print-separator 'stylish-print-separator port indent wide?))
 
 (define (stylish-quotable-value? v [est (current-expr-style)])
   (value-quotable? 'stylish-quotable-value? v est))
 
 (define (stylish-value->expr v [est (current-expr-style)])
   (value->expression 'stylish-value->expr v est))
-
-(define (port->print-style port)
-  (cond
-    [(stylish-port? port) (stylish-port-print-style port)]
-    [else (current-print-style)]))
 
 (define current-print-style (make-parameter empty-print-style))
 (define current-expr-style (make-parameter empty-expr-style))

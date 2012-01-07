@@ -94,7 +94,7 @@
   (write-string left port)
   (unless (null? x)
     (stylish-print-delimited port
-      (lambda ()
+      (lambda (port)
         (print-elem (car x) port)
         (print-tail (cdr x) port indent print-elem))))
   (write-string right port))
@@ -116,7 +116,7 @@
           [print-cdr stylish-print-expr])
   (write-string left port)
   (stylish-print-delimited port
-    (lambda ()
+    (lambda (port)
       (print-car (car x) port)
       (print-dotted (cdr x) port indent print-cdr)))
   (write-string right port))
@@ -166,7 +166,7 @@
           [print-value stylish-print-expr])
   (write-string "#s(" port)
   (stylish-print-delimited port
-    (lambda ()
+    (lambda (port)
       (print-key (prefab-key x) port)
       (print-tail (prefab-fields x) port 1 print-value)))
   (write-string ")" port))
@@ -178,7 +178,7 @@
   (print-expr (stylish-comment-expr-expr x) port)
   (stylish-print-separator port 0 #true)
   (stylish-print-delimited port
-    (lambda ()
+    (lambda (port)
       (write-string "#|" port)
       (stylish-print-separator port 1 #false)
       (write-string (stylish-comment-expr-comment x) port)
