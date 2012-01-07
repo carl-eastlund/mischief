@@ -7,11 +7,11 @@
 
   stylish-print
   stylish-println
-  stylish-format
+  stylish-value->string
 
   stylish-print-expr
   stylish-println-expr
-  stylish-format-expr
+  stylish-expr->string
   stylish-print-delimited
   stylish-print-separator
 
@@ -93,7 +93,7 @@
   (print-expression 'stylish-println pst e port left right columns)
   (newline port))
 
-(define (stylish-format v
+(define (stylish-value->string v
           #:expr-style [est (current-expr-style)]
           #:print-style [pst (current-print-style)]
           #:left [left 0]
@@ -103,8 +103,8 @@
   (define s
     (call-with-output-string
       (lambda (port)
-        (print-expression 'stylish-format pst e port left right columns))))
-  (log-debugf "\n===== stylish-format =====\n")
+        (print-expression 'stylish-value->string pst e port left right columns))))
+  (log-debugf "\n===== stylish-value->string =====\n")
   (log-debugf "Convert:\n~e\n" v)
   (log-debugf "Print:\n~e\n" e)
   (log-debugf "Return:\n~e\n" s)
@@ -129,7 +129,7 @@
   (print-expression 'stylish-println-expr pst e port left right columns)
   (newline port))
 
-(define (stylish-format-expr e
+(define (stylish-expr->string e
           #:print-style [pst (current-print-style)]
           #:left [left 0]
           #:right [right 0]

@@ -109,7 +109,7 @@
   (dprintf "~a\n~a~a"
     desc
     (make-string indentation #\space)
-    (stylish-format-expr
+    (stylish-expr->string
       (match xs
         [(list x) (stylish-value->expr x)]
         [xs `(values ,@(map stylish-value->expr xs))])
