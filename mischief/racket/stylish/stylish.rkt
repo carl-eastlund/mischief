@@ -21,6 +21,7 @@
   print-style?
   empty-print-style
   current-print-style
+  port->print-style
   set-print-style-default-printer
   set-print-style-preserve-cache?
   print-style-extension?
@@ -66,9 +67,7 @@
 
 (define (stylish-print v [port (current-output-port)]
           #:expr-style [est (current-expr-style)]
-          #:print-style [pst (if (stylish-port? port)
-                               (stylish-port-print-style port)
-                               (current-print-style))]
+          #:print-style [pst (port->print-style port)]
           #:left [left 0]
           #:right [right 0]
           #:columns [columns (current-stylish-print-columns)])
@@ -80,9 +79,7 @@
 
 (define (stylish-println v [port (current-output-port)]
           #:expr-style [est (current-expr-style)]
-          #:print-style [pst (if (stylish-port? port)
-                               (stylish-port-print-style port)
-                               (current-print-style))]
+          #:print-style [pst (port->print-style port)]
           #:left [left 0]
           #:right [right 0]
           #:columns [columns (current-stylish-print-columns)])
@@ -111,18 +108,14 @@
   s)
 
 (define (stylish-print-expr e [port (current-output-port)]
-          #:print-style [pst (if (stylish-port? port)
-                               (stylish-port-print-style port)
-                               (current-print-style))]
+          #:print-style [pst (port->print-style port)]
           #:left [left 0]
           #:right [right 0]
           #:columns [columns (current-stylish-print-columns)])
   (print-expression 'stylish-print-expr pst e port left right columns))
 
 (define (stylish-println-expr e [port (current-output-port)]
-          #:print-style [pst (if (stylish-port? port)
-                               (stylish-port-print-style port)
-                               (current-print-style))]
+          #:print-style [pst (port->print-style port)]
           #:left [left 0]
           #:right [right 0]
           #:columns [columns (current-stylish-print-columns)])
@@ -149,6 +142,11 @@
 
 (define (stylish-value->expr v [est (current-expr-style)])
   (value->expression 'stylish-value->expr v est))
+
+(define (port->print-style port)
+  (cond
+    [(stylish-port? port) (stylish-port-print-style port)]
+    [else (current-print-style)]))
 
 (define current-print-style (make-parameter empty-print-style))
 (define current-expr-style (make-parameter empty-expr-style))
