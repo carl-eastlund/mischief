@@ -127,22 +127,26 @@
              (format " ~v" x))))]))
 
 (define (call-with-debug-frame desc-str thunk)
-  (define (enter) (dprintf ">> ~a" desc-str))
-  (define (exit) (dprintf "<< ~a" desc-str))
+  (define (enter) (dprintf #:prefix ">> " "~a" desc-str))
+  (define (exit) (dprintf #:prefix "<< " "~a" desc-str))
   (define (work)
     (parameterize {[current-debug-depth (add1 (current-debug-depth))]}
       (thunk)))
   (dynamic-wind enter work exit))
 
-(define (dprintf fmt . args)
+(define (dprintf #:prefix [prefix "| "] fmt . args)
   (eprintf "~a"
-    (indent (apply format fmt args))))
+    (indent prefix
+      (apply format fmt args))))
 
-(define (indent str [n (* 2 (current-debug-depth))])
+(define (indent prefix str)
+  (define n (* (debug-indent-width) (current-debug-depth)))
   (define indentation (make-string n #\space))
   (apply string-append
     (for/list {[line (in-list (string-lines str))]}
-      (format "~a~a\n" indentation line))))
+      (format "~a~a~a\n" indentation prefix line))))
+
+(define (debug-indent-width) 1)
 
 (define current-debug-depth
   (make-parameter 0))
