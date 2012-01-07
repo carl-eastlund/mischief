@@ -5,6 +5,9 @@
 
 (provide
 
+  stylish-format
+  stylish-printf
+
   stylish-print
   stylish-println
   stylish-value->string
@@ -12,8 +15,9 @@
   stylish-print-expr
   stylish-println-expr
   stylish-expr->string
-  stylish-print-delimited
   stylish-print-separator
+  call-with-stylish-port
+  with-stylish-port
 
   stylish-quotable-value?
   stylish-value->expr
@@ -50,6 +54,7 @@
 (require
   racket/function
   racket/port
+  mischief/racket/stylish/format
   mischief/racket/stylish/expression
   mischief/racket/stylish/print)
 
@@ -63,6 +68,31 @@
 ;; Public Definitions
 
 (struct stylish-comment-expr [comment expr] #:transparent)
+
+(define (stylish-printf
+          #:port [port (current-output-port)]
+          #:expr-style [est (current-expr-style)]
+          #:print-style [pst (current-print-style)]
+          #:left [left 0]
+          #:right [right 0]
+          #:columns [columns (current-stylish-print-columns)]
+          fmt . args)
+  (print-to-stylish-port 'stylish-printf port left right columns
+    (lambda (port)
+      (print-formatted 'stylish-printf est pst port fmt args))))
+
+(define (stylish-format
+          #:expr-style [est (current-expr-style)]
+          #:print-style [pst (current-print-style)]
+          #:left [left 0]
+          #:right [right 0]
+          #:columns [columns (current-stylish-print-columns)]
+          fmt . args)
+  (call-with-output-string
+    (lambda (port)
+      (print-to-stylish-port 'stylish-format port left right columns
+        (lambda (port)
+          (print-formatted 'stylish-format est pst port fmt args))))))
 
 (define (stylish-print v [port (current-output-port)]
           #:expr-style [est (current-expr-style)]
@@ -140,10 +170,18 @@
         (lambda (port)
           (print-expression 'stylish-expr->string e pst port))))))
 
-(define (stylish-print-delimited port proc)
-  (print-to-stylish-port 'stylish-print-delimited port 0 0
-    (current-stylish-print-columns)
+(define (call-with-stylish-port port proc
+          #:left [left 0]
+          #:right [right 0]
+          #:columns [columns (current-stylish-print-columns)])
+  (print-to-stylish-port 'call-with-stylish-port port left right columns
     proc))
+
+(define-syntax-rule (with-stylish-port body ...)
+  (call-with-stylish-port (current-output-port)
+    (lambda (port)
+      (parameterize {[current-output-port port]}
+        body ...))))
 
 (define (stylish-print-separator port [indent 0] [wide? #t])
   (print-separator 'stylish-print-separator port indent wide?))

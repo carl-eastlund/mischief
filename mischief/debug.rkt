@@ -7,6 +7,7 @@
   debug-expr
   debug-value
   dprintf
+  stylish-dprintf
   call-with-debug-frame
   call-and-debug)
 
@@ -139,12 +140,28 @@
     (indent prefix
       (apply format fmt args))))
 
+(define (stylish-dprintf
+          #:prefix [prefix "| "]
+          #:columns [columns (current-stylish-print-columns)]
+          #:expr-style [est (current-expr-style)]
+          #:print-style [pst (current-print-style)]
+          fmt . args)
+  (dprintf #:prefix prefix "~a"
+    (apply stylish-format
+      #:columns (- columns (indent-length) (string-length prefix))
+      #:expr-style est
+      #:print-style pst
+      fmt args)))
+
 (define (indent prefix str)
-  (define n (* (debug-indent-width) (current-debug-depth)))
+  (define n (indent-length))
   (define indentation (make-string n #\space))
   (apply string-append
     (for/list {[line (in-list (string-lines str))]}
       (format "~a~a~a\n" indentation prefix line))))
+
+(define (indent-length)
+  (* (debug-indent-width) (current-debug-depth)))
 
 (define (debug-indent-width) 1)
 
