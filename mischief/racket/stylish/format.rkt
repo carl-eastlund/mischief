@@ -30,20 +30,31 @@
        (unless (empty? args)
          (error name "unused arguments at ~a in ~a" i (reconstruct)))]
       [(< i n)
+       (match (string-ref fmt i)
+         [#\~ (escape-from-index (add1 i) args)]
+         [#\newline
+          (print-separator name port 0 #false)
+          (print-from-index (add1 i) args)]
+         [ch
+          (write-char ch port)
+          (print-from-index (add1 i) args)])
        (define ch (string-ref fmt i))
        (cond!
-         [(char=? ch #\~)
-          (escape-from-index (add1 i) args)]
-         [else
-          (write-char ch port)
-          (print-from-index (add1 i) args)])]))
+         [(char=? ch #\~)]
+         [else])]))
 
   (define (escape-from-index i args)
     (cond!
       [(= i n) (error name "unterminated escape at ~a in ~a" i (reconstruct))]
       [(< i n)
        (match (string-ref fmt i)
-         [#\~ (write-char #\~ port)]
+         [#\~
+          (write-char #\~ port)
+          (print-from-index (add1 i) args)]
+         [(? char-numeric? ch)
+          (define n (char->number ch))
+          (print-separator name port n #true)
+          (print-from-index (add1 i) args)]
          [#\a (format-at-index i args display)]
          [#\s (format-at-index i args
                 (lambda (e port)
@@ -70,5 +81,8 @@
       (for {[arg (in-list args0)]}
         (printf " ~v" arg))
       (printf ")")))
+
+  (define (char->number ch)
+    (string->number (string ch)))
 
   (print-from-index 0 args0))

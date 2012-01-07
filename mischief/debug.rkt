@@ -106,26 +106,12 @@
   (debug-values desc (list x)))
 
 (define (debug-values desc xs)
-  (define indentation 2)
-  (dprintf "~a\n~a~a"
-    desc
-    (make-string indentation #\space)
-    (stylish-expr->string
-      (match xs
-        [(list x) (stylish-value->expr x)]
-        [xs `(values ,@(map stylish-value->expr xs))])
-      #:left indentation
-      #:columns (- (current-stylish-print-columns)
-                   (* 2 (current-debug-depth))
-                   indentation))))
+  (stylish-dprintf "~a\n ~s" desc (values->expr xs)))
 
-(define (values->string xs)
+(define (values->expr xs)
   (match xs
-    [(list x) (format "~v" x)]
-    [_ (format "(values~a)"
-         (apply string-append
-           (for/list {[x (in-list xs)]}
-             (format " ~v" x))))]))
+    [(list x) (stylish-value->expr x)]
+    [_ (list* 'values (map stylish-value->expr xs))]))
 
 (define (call-with-debug-frame desc-str thunk)
   (define (enter) (dprintf #:prefix ">> " "~a" desc-str))
