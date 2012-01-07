@@ -12,12 +12,13 @@
 (require
   racket/set
   racket/promise
+  syntax/srcloc
   mischief/racket/define
   mischief/racket/struct
   mischief/racket/stylish/stylish)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Public Definition
+;; Public Definitions
 
 (at-end
   (define default-expr-style
@@ -408,10 +409,18 @@
 
 (define (convert-syntax stx st)
   (define datum (syntax->datum stx))
-  (if (stylish-quotable-value? datum st)
-    (list 'syntax datum)
-    (list 'datum->syntax '_
-      (stylish-value->expr datum st))))
+  (define expr
+    (cond
+      [(stylish-quotable-value? datum)
+       (list 'syntax datum)]
+      [else
+       (list 'datum->syntax
+         '(syntax ?)
+         (stylish-value->expr datum st))]))
+  (cond
+    [(source-location-known? stx)
+     (stylish-comment-expr (source-location->string stx) expr)]
+    [else expr]))
 
 (define (quotable-syntax? stx st) #false)
 (define try-quote-syntax? #false)

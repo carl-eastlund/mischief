@@ -38,7 +38,8 @@
       (print-style-extension vector? print-vector)
       (print-style-extension box? print-box)
       (print-style-extension hash? print-hash)
-      (print-style-extension prefab? print-prefab))))
+      (print-style-extension prefab? print-prefab)
+      (print-style-extension stylish-comment-expr? print-comment))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Private Definitions
@@ -169,3 +170,17 @@
       (print-key (prefab-key x) port)
       (print-tail (prefab-fields x) port 1 print-value)))
   (write-string ")" port))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Print Comment Expr
+
+(define (print-comment x port [print-expr stylish-print-expr])
+  (print-expr (stylish-comment-expr-expr x) port)
+  (stylish-print-separator port 0 #true)
+  (stylish-print-delimited port
+    (lambda ()
+      (write-string "#|" port)
+      (stylish-print-separator port 1 #false)
+      (write-string (stylish-comment-expr-comment x) port)
+      (stylish-print-separator port 1 #false)
+      (write-string "|#" port))))

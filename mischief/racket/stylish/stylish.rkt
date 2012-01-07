@@ -26,6 +26,9 @@
   print-style-extension?
   current-stylish-print-columns
 
+  (struct-out
+    stylish-comment-expr)
+
   expr-style?
   empty-expr-style
   current-expr-style
@@ -58,6 +61,8 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public Definitions
+
+(struct stylish-comment-expr [comment expr] #:transparent)
 
 (define (stylish-print v [port (current-output-port)]
           #:expr-style [est (current-expr-style)]
