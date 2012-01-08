@@ -1,6 +1,7 @@
 #lang racket/base
 
 (provide
+  make-alist build-alist
   member? memv? memq?
   take-while drop-while
   take-until drop-until
@@ -9,6 +10,14 @@
 (require
   racket/list
   racket/function)
+
+(define (make-alist keys value)
+  (for/list {[key (in-list keys)]}
+    (cons key value)))
+
+(define (build-alist keys key->value)
+  (for/list {[key (in-list keys)]}
+    (cons key (key->value key))))
 
 (define (member? x ys [equiv? equal?])
   (for/or {[y (in-list ys)]}
