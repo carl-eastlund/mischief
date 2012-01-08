@@ -103,7 +103,7 @@
   (cond
     [(null? x) (void)]
     [(pair? x)
-     (stylish-print-separator port indent)
+     (stylish-print-separator port #:indent indent)
      (print-elem (car x) port)
      (print-tail (cdr x) port indent print-elem)]
     [else (print-dotted x port indent print-elem)]))
@@ -122,9 +122,9 @@
   (write-string right port))
 
 (define (print-dotted x port indent [print-elem stylish-print-expr])
-  (stylish-print-separator port indent)
+  (stylish-print-separator port #:indent indent)
   (write-string "." port)
-  (stylish-print-separator port indent)
+  (stylish-print-separator port #:indent indent)
   (print-elem x port))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -176,11 +176,11 @@
 
 (define (print-comment x port [print-expr stylish-print-expr])
   (print-expr (stylish-comment-expr-expr x) port)
-  (stylish-print-separator port 0 #true)
+  (stylish-print-separator port)
   (call-with-stylish-port port
     (lambda (port)
       (write-string "#|" port)
-      (stylish-print-separator port 1 #true)
+      (stylish-print-separator port #:indent 1)
       (write-string (stylish-comment-expr-comment x) port)
-      (stylish-print-separator port 1 #true)
+      (stylish-print-separator port #:indent 1)
       (write-string "|#" port))))

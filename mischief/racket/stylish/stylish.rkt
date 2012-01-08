@@ -183,7 +183,7 @@
       (parameterize {[current-output-port port]}
         body ...))))
 
-(define (stylish-print-separator port [indent 0] [wide? #t])
+(define (stylish-print-separator port #:indent [indent 0] #:wide? [wide? #t])
   (print-separator 'stylish-print-separator port indent wide?))
 
 (define (stylish-quotable-value? v [est (current-expr-style)])
