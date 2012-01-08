@@ -180,7 +180,7 @@
   (call-with-stylish-port port
     (lambda (port)
       (write-string "#|" port)
-      (stylish-print-separator port 1 #false)
+      (stylish-print-separator port 1 #true)
       (write-string (stylish-comment-expr-comment x) port)
-      (stylish-print-separator port 1 #false)
+      (stylish-print-separator port 1 #true)
       (write-string "|#" port))))
