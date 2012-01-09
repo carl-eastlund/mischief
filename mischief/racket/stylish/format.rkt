@@ -62,6 +62,20 @@
                 (lambda (x port)
                   (define e (value->expression name x est))
                   (print-expression name e pst port)))]
+         [#\f (format-at-index i args
+                (lambda (fmt+args port)
+                  (unless (and
+                            (list? fmt+args)
+                            (cons? fmt+args)
+                            (string? (first fmt+args)))
+                    (error name
+                      "~a; expected ~a, but found: ~v"
+                      "invalid argument to ~f (nested format) escape"
+                      "a non-empty list with a string as its first element"
+                      fmt+args))
+                  (print-formatted name est pst port
+                    (first fmt+args)
+                    (rest fmt+args))))]
          [ch (error name
                "invalid escape character `~a' at ~a in ~a"
                ch
@@ -80,7 +94,7 @@
   (define (reconstruct)
     (with-output-to-string
       (lambda ()
-        (printf "(~a ~v" fmt name)
+        (printf "(~a ~v" name fmt)
         (for {[arg (in-list args0)]}
           (printf " ~v" arg))
         (printf ")"))))

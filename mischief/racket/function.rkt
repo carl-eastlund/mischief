@@ -6,6 +6,7 @@
   arg+-right
   disjoin
   conjoin
+  call
   keyword-call
   define/keywords
   lambda/keywords
@@ -71,6 +72,11 @@
 
 (define (keyword-call f ks vs . xs)
   (keyword-apply f ks vs xs))
+
+(define call
+  (make-keyword-procedure
+    (lambda (ks vs f . xs)
+      (keyword-apply f ks vs xs))))
 
 (define (make-eta ->proc)
   (let* {[memo (delay (->proc))]}
