@@ -101,8 +101,12 @@
   (lambda (stx)
     (syntax-parse stx
       [x:id (f #'x)]
-      [((~literal set!) x:id e:expr) #`(set! #,(f #'x) e)]
-      [(x:id . args) #`(#,(to-syntax '#%app #:stx stx) #,(f #'x) . args)])))
+      [((~literal set!) x:id e:expr)
+       (to-syntax #:stx stx
+         (list #'set! (f #'x) #'e))]
+      [(x:id . args)
+       (to-syntax #:stx stx
+         (list* '#%app (f #'x) #'args))])))
 
 (define (macro-transform mt stx)
   (transform stx
