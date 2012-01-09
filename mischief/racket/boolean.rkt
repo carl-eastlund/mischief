@@ -23,7 +23,7 @@
 
   (define-splicing-syntax-class cond!-default
     #:attributes {result}
-    (pattern (~seq [{~literal else} results:expr ...])
+    (pattern (~seq [{~literal else} ~! results:expr ...+])
       #:attr result #'(block results ...))
     (pattern (~seq)
       #:attr loc
@@ -42,17 +42,13 @@
 
   (define-syntax-class cond!-clause
     #:attributes {wrap}
-    (pattern [{~literal else} ~! . _]
-      #:fail-when #true
-      "the `else' literal is only allowed as the final clause"
-      #:attr wrap #false)
-    (pattern [test:expr {~literal =>} ~! fun:expr]
+    (pattern [test:test-expr {~literal =>} ~! fun:expr]
       #:attr var (generate-temporary)
       #:attr wrap
       (lambda (stx)
         #`(let {[var test]}
             (if var (fun var) #,stx))))
-    (pattern [test:expr body:expr ...+]
+    (pattern [test:test-expr body:expr ...+]
       #:do {(when (eq? (syntax-e (attribute test)) 'else)
               (emit-remark
                 "mismatched `else' literal"
@@ -68,12 +64,15 @@
       #:attr wrap
       (lambda (stx)
         #`(if test (block body ...) #,stx)))
-    (pattern [test:expr]
+    (pattern [test:test-expr]
       #:attr var (generate-temporary)
       #:attr wrap
       (lambda (stx)
         #`(let {[var test]}
             (if var var #,stx)))))
+
+  (define-syntax-class test-expr
+    (pattern (~and (~not {~literal else}) _:expr)))
 
   (syntax-parse stx
     [(_ clauses:cond!-clauses default:cond!-default)
