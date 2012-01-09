@@ -19,6 +19,7 @@
     syntax/srcloc
     syntax/location
     syntax/strip-context
+    mischief/racket/error
     mischief/racket/dict
     mischief/racket/for
     mischief/racket/list
