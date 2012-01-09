@@ -28,6 +28,7 @@
   racket/list
   racket/port
   racket/promise
+  racket/block
   data/queue
   mischief/racket/struct
   mischief/racket/boolean)
@@ -62,13 +63,14 @@
   (define string-port (open-output-string 'stylish))
   (define contents (make-queue))
   (define port (stylish-port string-port contents))
-  (proc port)
-  (stylish-port-flush! port)
-  (close-output-port port)
-  (define d (delimit-tokens (queue->list contents)))
-  (cond!
-    [(stylish-port? port0) (stylish-port-enqueue! port0 d)]
-    [else (render-delimited d port0 left right cols)]))
+  (begin0 (proc port)
+    (block
+      (stylish-port-flush! port)
+      (close-output-port port)
+      (define d (delimit-tokens (queue->list contents)))
+      (cond!
+        [(stylish-port? port0) (stylish-port-enqueue! port0 d)]
+        [else (render-delimited d port0 left right cols)]))))
 
 (define (print-expression name e st0 port)
   (define st (set-print-style-preserve-cache? st0 #true))
@@ -178,7 +180,7 @@
         (cons token
           (add-separators (rest contents) #false))]
        [(delimited? token)
-        (cons/optional (and seen-delimited? (separator 0 #false))
+        (cons/optional (and seen-delimited? (separator 1 #false))
           (cons token
             (add-separators (rest contents) #true)))])]))
 

@@ -28,20 +28,19 @@
     (cond!
       [(= i n)
        (unless (empty? args)
-         (error name "unused arguments at ~a in ~a" i (reconstruct)))]
+         (error name "unused arguments at ~a in ~a" i (reconstruct)))
+       #false]
       [(< i n)
        (match (string-ref fmt i)
          [#\~ (escape-from-index (add1 i) args)]
          [#\newline
-          (print-separator name port 0 #false)
+          (error name "invalid newline at ~a in ~a" i (reconstruct))]
+         [#\space
+          (print-separator name port 1 #true)
           (print-from-index (add1 i) args)]
          [ch
           (write-char ch port)
-          (print-from-index (add1 i) args)])
-       (define ch (string-ref fmt i))
-       (cond!
-         [(char=? ch #\~)]
-         [else])]))
+          (print-from-index (add1 i) args)])]))
 
   (define (escape-from-index i args)
     (cond!
@@ -72,15 +71,19 @@
   (define (format-at-index i args show)
     (unless (cons? args)
       (error name "too few arguments at ~a in ~a" i (reconstruct)))
-    (show (first args) port)
+    (print-to-stylish-port name port
+      #false #false #false ;; dummy left/right/cols
+      (lambda (port)
+        (show (first args) port)))
     (print-from-index (add1 i) (rest args)))
 
   (define (reconstruct)
     (with-output-to-string
-      (printf "(~a" name)
-      (for {[arg (in-list args0)]}
-        (printf " ~v" arg))
-      (printf ")")))
+      (lambda ()
+        (printf "(~a ~v" fmt name)
+        (for {[arg (in-list args0)]}
+          (printf " ~v" arg))
+        (printf ")"))))
 
   (define (char->number ch)
     (string->number (string ch)))

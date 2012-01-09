@@ -106,7 +106,7 @@
   (debug-values desc (list x)))
 
 (define (debug-values desc xs)
-  (stylish-dprintf "~a\n ~s" desc (values->expr xs)))
+  (stylish-dprintf "~a ~s" desc (values->expr xs)))
 
 (define (values->expr xs)
   (match xs
