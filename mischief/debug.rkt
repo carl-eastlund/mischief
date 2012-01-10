@@ -135,21 +135,27 @@
     [else
      (list 'raise (stylish-value->expr x))]))
 
-(define (call-with-debug-frame #:thunk thunk fmt . args)
-  (define (enter) (apply !dbg stylish-dprintf #:prefix ">> " fmt args))
-  (define (exit) (apply !dbg stylish-dprintf #:prefix "<< " fmt args))
+(define (call-with-debug-frame
+          #:enter [enter-prefix (current-debug-enter-prefix)]
+          #:exit [exit-prefix (current-debug-exit-prefix)]
+          #:thunk thunk
+          fmt . args)
+  (define (enter) (apply !dbg stylish-dprintf #:prefix enter-prefix fmt args))
+  (define (exit) (apply !dbg stylish-dprintf #:prefix exit-prefix fmt args))
   (define (work)
     (parameterize {[current-debug-depth (add1 (current-debug-depth))]}
       (thunk)))
   (dynamic-wind enter work exit))
 
-(define (dprintf #:prefix [prefix "| "] fmt . args)
+(define (dprintf
+          #:prefix [prefix (current-debug-prefix)]
+          fmt . args)
   (eprintf "~a"
     (indent prefix
       (apply format fmt args))))
 
 (define (stylish-dprintf
-          #:prefix [prefix "| "]
+          #:prefix [prefix (current-debug-prefix)]
           #:columns [columns (current-stylish-print-columns)]
           #:expr-style [est (current-expr-style)]
           #:print-style [pst (current-print-style)]
@@ -173,8 +179,10 @@
 
 (define (debug-indent-width) 1)
 
-(define current-debug-depth
-  (make-parameter 0))
+(define current-debug-depth (make-parameter 0))
+(define current-debug-enter-prefix (make-parameter ">> "))
+(define current-debug-exit-prefix (make-parameter "<< "))
+(define current-debug-prefix (make-parameter "| "))
 
 ;; Who debugs the debugger:
 (define !dbg
