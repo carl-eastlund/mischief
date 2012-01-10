@@ -39,7 +39,8 @@
       (print-style-extension box? print-box)
       (print-style-extension hash? print-hash)
       (print-style-extension prefab? print-prefab)
-      (print-style-extension stylish-comment-expr? print-comment))))
+      (print-style-extension stylish-comment-expr? print-comment)
+      (print-style-extension stylish-unprintable-expr? print-unprintable))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Private Definitions
@@ -172,7 +173,7 @@
   (write-string ")" port))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Print Comment Expr
+;; Print Comment
 
 (define (print-comment x port [print-expr stylish-print-expr])
   (print-expr (stylish-comment-expr-expr x) port)
@@ -184,3 +185,11 @@
       (write-string (stylish-comment-expr-comment x) port)
       (stylish-print-separator port #:indent 1)
       (write-string "|#" port))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Print Unprintable
+
+(define (print-unprintable x port)
+  (write-string "#<" port)
+  (display (stylish-unprintable-expr-name x) port)
+  (write-string ">" port))

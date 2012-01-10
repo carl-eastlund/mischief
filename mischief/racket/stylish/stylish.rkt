@@ -30,8 +30,8 @@
   print-style-extension?
   current-stylish-print-columns
 
-  (struct-out
-    stylish-comment-expr)
+  (struct-out stylish-comment-expr)
+  (struct-out stylish-unprintable-expr)
 
   expr-style?
   empty-expr-style
@@ -68,6 +68,7 @@
 ;; Public Definitions
 
 (struct stylish-comment-expr [comment expr] #:transparent)
+(struct stylish-unprintable-expr [name] #:transparent)
 
 (define (stylish-printf
           #:port [port (current-output-port)]
