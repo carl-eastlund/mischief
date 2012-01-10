@@ -4,7 +4,6 @@
   define/debug
   debug
   debug*
-  debug-expr
   debug-value
   debug-values
   dprintf
@@ -25,6 +24,7 @@
   racket/function
   syntax/location
   syntax/srcloc
+  mischief/racket/boolean
   mischief/racket/error
   mischief/racket/string
   mischief/racket/function
@@ -50,8 +50,8 @@
      #'(!dbg call-and-debug fmt arg ...
          #:thunk
          (lambda ()
-           (let {[fun-var (debug-expr fun)]
-                 [arg-var (debug-expr arg.value)]
+           (let {[fun-var (debug* fun)]
+                 [arg-var (debug* arg.value)]
                  ...}
              (fun-var arg-key/var ... ...))))]))
 
@@ -68,11 +68,6 @@
          #'(quote e))])))
 
 (define-syntax (debug* stx)
-  (syntax-parse stx
-    [(_ . e:expr)
-     #'(!dbg debug-expr e)]))
-
-(define-syntax (debug-expr stx)
   (syntax-parse stx
     [(_ e:expr)
      (define/syntax-parse [fmt arg ...]
@@ -109,7 +104,7 @@
           (with-handlers
               {[exn:fail?
                 (lambda (x)
-                  (!dbg debug-value "Raised exception:" #:value x)
+                  (!dbg debug-exception "Exception:" #:exn x)
                   (raise x))]}
             (thunk)))
         (lambda results
@@ -120,12 +115,25 @@
   (apply !dbg debug-values #:values (list x) fmt args))
 
 (define (debug-values #:values xs fmt . args)
-  (!dbg stylish-dprintf "~f ~s" (list* fmt args) (values->expr xs)))
+  (apply !dbg debug-expr #:expr (values->expr xs) fmt args))
+
+(define (debug-exception #:exn x fmt . args)
+  (apply !dbg debug-expr #:expr (exn->expr x) fmt args))
+
+(define (debug-expr #:expr e fmt . args)
+  (!dbg stylish-dprintf "~f ~s" (list* fmt args) e))
 
 (define (values->expr xs)
   (match xs
     [(list x) (stylish-value->expr x)]
     [_ (list* 'values (map stylish-value->expr xs))]))
+
+(define (exn->expr x)
+  (cond!
+    [(and (exn? x) (not (struct? x)))
+     (list 'error (exn-message x))]
+    [else
+     (list 'raise (stylish-value->expr x))]))
 
 (define (call-with-debug-frame #:thunk thunk fmt . args)
   (define (enter) (apply !dbg stylish-dprintf #:prefix ">> " fmt args))
