@@ -132,34 +132,28 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; A CDict is (make-contracted-dictionary (Listof (Cons Proj Proj)) Dict)
-;; A Proj is (make-projection Contract Symbol Symbol Any Any)
-(define-struct contracted-dictionary [projections bindings])
-(define-struct projection [contract out in source name blame])
+;; A CDict is (cdict (Listof (Cons Proj Proj)) Dict)
+;; A Proj is (proj Contract Blame)
+(struct cdict [projections bindings])
+(struct proj [contract blame])
 
 (define (dict/c key/c value/c)
   (let* ([key/c (coerce-contract 'dict/c key/c)]
          [value/c (coerce-contract 'dict/c value/c)])
-    (make-proj-contract
-     (build-compound-type-name 'dict/c key/c value/c)
-     (lambda (pos neg src name blame)
-       (lambda (dict)
-         (unless (dict? dict)
-           (raise-contract-error dict src pos name
-                                 "expected a dictionary, got: ~e"
-                                 dict))
-         (wrap
-          (cons (cons (make-projection key/c pos neg src name blame)
-                      (make-projection value/c pos neg src name blame))
-                (dict->projections dict))
-          (dict->bindings dict))))
-     dict?)))
-
-(define-match-expander cdict
-  (syntax-rules () [(_ p b) (struct contracted-dictionary [p b])]))
-
-(define-match-expander proj
-  (syntax-rules () [(_ c o i s n b) (struct projection [c o i s n b])]))
+    (make-contract
+      #:name (list 'dict/c (contract-name key/c) (contract-name value/c))
+      #:first-order dict?
+      #:projection
+      (lambda (blame)
+        (lambda (dict)
+          (unless (dict? dict)
+            (raise-blame-error blame dict
+              "expected a dictionary, but got ~v"
+              dict))
+          (wrap
+            (list* (cons (proj key/c blame) (proj value/c blame))
+              (dict->projections dict))
+            (dict->bindings dict)))))))
 
 (define -ref
   (case-lambda
@@ -244,13 +238,13 @@
 
 (define (project-in p x)
   (match p
-    [(proj c o i s n b)
-     (((contract-proc c) i o s n (not b)) x)]))
+    [(proj c b)
+     (((contract-projection c) (blame-swap b)) x)]))
 
 (define (project-out p x)
   (match p
-    [(proj c o i s n b)
-     (((contract-proc c) o i s n b) x)]))
+    [(proj c b)
+     (((contract-projection c) b) x)]))
 
 (define (dict->bindings dict)
   (match dict
@@ -285,11 +279,11 @@
 (define prop:___ (vector -ref  #f    #f   #f    #f  -size -fst -nxt -key -val))
 
 ;; The __- case (removal without functional or mutable update) is nonsensical.
-(define-struct (:!+- contracted-dictionary) [] #:property prop:dict prop:!+-)
-(define-struct (:!+_ contracted-dictionary) [] #:property prop:dict prop:!+_)
-(define-struct (:!_- contracted-dictionary) [] #:property prop:dict prop:!_-)
-(define-struct (:!__ contracted-dictionary) [] #:property prop:dict prop:!__)
-(define-struct (:_+- contracted-dictionary) [] #:property prop:dict prop:_+-)
-(define-struct (:_+_ contracted-dictionary) [] #:property prop:dict prop:_+_)
-(define-struct (:__- contracted-dictionary) [] #:property prop:dict prop:__-)
-(define-struct (:___ contracted-dictionary) [] #:property prop:dict prop:___)
+(define-struct (:!+- cdict) [] #:property prop:dict prop:!+-)
+(define-struct (:!+_ cdict) [] #:property prop:dict prop:!+_)
+(define-struct (:!_- cdict) [] #:property prop:dict prop:!_-)
+(define-struct (:!__ cdict) [] #:property prop:dict prop:!__)
+(define-struct (:_+- cdict) [] #:property prop:dict prop:_+-)
+(define-struct (:_+_ cdict) [] #:property prop:dict prop:_+_)
+(define-struct (:__- cdict) [] #:property prop:dict prop:__-)
+(define-struct (:___ cdict) [] #:property prop:dict prop:___)
