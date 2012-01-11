@@ -38,6 +38,7 @@
     mischief/racket/memoize
     mischief/racket/require
     mischief/racket/module
+    mischief/racket/sort
     mischief/syntax/scope
     mischief/syntax/parse
     mischief/syntax/transform
