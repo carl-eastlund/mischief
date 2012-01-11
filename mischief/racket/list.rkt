@@ -5,11 +5,14 @@
   member? memv? memq?
   take-while drop-while
   take-until drop-until
+  topological-sort
   sort/unique)
 
 (require
   racket/list
-  racket/function)
+  racket/match
+  racket/function
+  data/queue)
 
 (define (make-alist keys value)
   (for/list {[key (in-list keys)]}
@@ -80,3 +83,31 @@
               (loop (first elements)
                 (rest elements)))
             (loop elem (rest elements))))))))
+
+(define (topological-sort todo elem->deps)
+
+  (define elem~>status (make-hasheq))
+  (define done (make-queue))
+
+  (define (visit elem [seen '()])
+    (match (hash-ref elem~>status elem 'todo)
+      ['done (void)]
+      ['seen
+       (error 'topological-sort
+         "cycle detected: ~v"
+         (cons elem
+           (take-until
+             (lambda (x)
+               (eq? x elem))
+             seen)))]
+      ['todo
+       (hash-set! elem~>status elem 'seen)
+       (let* {[seen (cons elem seen)]}
+         (for {[dep (in-list (elem->deps elem))]}
+           (visit elem seen)))
+       (hash-set! elem~>status elem 'done)]))
+
+  (for {[elem (in-list todo)]}
+    (visit elem))
+
+  (queue->list done))
