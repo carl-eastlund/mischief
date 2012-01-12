@@ -2,78 +2,106 @@
 
 (provide
   dict-ref?
-  dict-key-not-found-error)
+  dict-update?
+  dict-add
+  dict-subtract
+  dict-set-all
+  dict-remove-all)
 
 (require
   racket/dict
-  racket/function
-  racket/contract)
-
-(provide/contract
- [dict-union (->* [(and/c dict? dict-can-functional-set?)]
-                  [#:combine
-                   (-> any/c any/c any/c)
-                   #:combine/key
-                   (-> any/c any/c any/c any/c)]
-                  #:rest (listof dict?)
-                  (and/c dict? dict-can-functional-set?))]
- [dict-union! (->* [(and/c dict? dict-mutable?)]
-                   [#:combine
-                   (-> any/c any/c any/c)
-                   #:combine/key
-                   (-> any/c any/c any/c any/c)]
-                   #:rest (listof dict?)
-                   void?)])
+  racket/match
+  racket/function)
 
 (define (dict-ref? dict key
           #:success [success identity]
-          #:failure [failure (lambda ()
-                               (dict-key-not-found-error
-                                 'dict-ref? dict key))])
-  (define thunk
+          #:failure [default
+                     (lambda ()
+                       (dict-key-not-found-error
+                         'dict-ref? dict key))])
+  (define result
     (let/ec return
-      (define result
+      (define value
         (dict-ref dict key
-          (lambda () (return failure))))
-      (lambda () (success result))))
-  (thunk))
+          (lambda () (return default))))
+      (lambda () (success value))))
+  (invoke result))
+
+(define (dict-update? dict key
+          #:transform [f identity]
+          #:success [success identity]
+          #:failure [default
+                     (lambda ()
+                       (dict-key-not-found-error
+                         'dict-update? dict key))])
+  ;; Using dict-update directly in case its implementation
+  ;; ever improves to traverse keys only once.
+  ;; Otherwise this would be easier with ref and set.
+  (dict-update dict key
+    (lambda (value/placeholder)
+      (define value
+        (match value/placeholder
+          [(placeholder contents) contents]
+          [value value]))
+      (f value))
+    (lambda ()
+      (placeholder
+        (invoke default)))))
+
+(struct placeholder [contents])
+
+(define (dict-add base
+          #:combine [combine #false]
+          #:combine/key
+          [combine/key
+           (if combine
+             (lambda (k v1 v2) (combine v1 v2))
+             (lambda (k v1 v2) (dict-key-multiple-values-error base k v1 v2)))]
+          . dicts)
+  (for*/fold
+      {[base base]}
+      {[dict (in-list dicts)]
+       [(key value) (in-dict dict)]}
+    (dict-update? base key
+      #:success (lambda (other) (combine/key key other value))
+      #:failure (lambda () value))))
+
+(define (dict-subtract base . dicts)
+  (for*/fold
+      {[base base]}
+      {[dict (in-list dicts)]
+       [key (in-dict-keys dict)]}
+    (dict-remove base key)))
+
+(define (dict-set-all base
+          #:value key->value
+          . seqs)
+  (for*/fold
+      {[base base]}
+      {[seq (in-list seqs)]
+       [key seq]}
+    (dict-set base key (invoke key->value key))))
+
+(define (dict-remove-all base . seqs)
+  (for*/fold
+      {[base base]}
+      {[seq (in-list seqs)]
+       [key seq]}
+    (dict-remove base key)))
+
+(define (invoke result . args)
+  (cond
+    [(procedure? result) (apply result args)]
+    [else result]))
 
 (define (dict-key-not-found-error name dict key)
-  (error name "key ~v not found in dict ~v" key dict))
+  (error name
+    "key ~v not found in dict ~v"
+    dict
+    key))
 
-(define ((dict-duplicate-error name) key value1 value2)
-  (error name "duplicate values for key ~e: ~e and ~e" key value1 value2))
-
-;; Eli: If this is useful, then at least make it worth using instead of
-;; writing your own code.  For example, inspect the arguments and choose
-;; an efficient order for the loops, or use a temporary hash table for a
-;; union of two alists, etc.  Alternatively, just write a function for
-;; merging two hash tables (and call it `hash-union', of course).
-
-;; Ryan: I prefer the names dict-add-all and dict-add-all!---no connotations
-;; of symmetry, and it makes it clear that the first argument determines the
-;; representation (and key constraints, etc).
-
-(define (dict-union
-         #:combine [combine #f]
-         #:combine/key [combine/key
-                        (if combine
-                          (lambda (k x y) (combine x y))
-                          (dict-duplicate-error 'dict-union))]
-         one . rest)
-  (for*/fold ([one one]) ([two (in-list rest)] [(k v) (in-dict two)])
-    (dict-set one k (if (dict-has-key? one k)
-                        (combine/key k (dict-ref one k) v)
-                        v))))
-
-(define (dict-union!
-         #:combine [combine #f]
-         #:combine/key [combine/key
-                        (if combine
-                          (lambda (k x y) (combine x y))
-                          (dict-duplicate-error 'dict-union))]
-         one . rest)
-  (for* ([two (in-list rest)] [(k v) (in-dict two)])
-    (dict-set! one k (if (dict-has-key? one k)
-                         (combine/key k (dict-ref one k) v)
-                         v))))
+(define (dict-key-multiple-values-error name dict key . vs)
+  (error name
+    "key ~v given multiple values ~v"
+    key
+    vs))

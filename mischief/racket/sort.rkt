@@ -7,9 +7,10 @@
   data/queue
   mischief/racket/match
   mischief/racket/list
-  mischief/debug)
+  mischief/no-debug)
 
-(define/debug (topological-sort todo elem->deps [cycle cycle-error])
+(define/debug (topological-sort todo elem->deps
+                #:cycle [cycle cycle-error])
 
   (define elem~>status (make-hasheq))
   (define done (make-queue))
