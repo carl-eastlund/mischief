@@ -61,65 +61,65 @@
 
 (define (convert-boolean b st) b)
 (define (quotable-boolean? b st) #true)
-(define try-quote-boolean? #false)
+(define prefer-quote-boolean? #false)
 
 (define boolean-expr-style-extension
   (expr-style-extension boolean?
     convert-boolean
     quotable-boolean?
-    try-quote-boolean?))
+    prefer-quote-boolean?))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Convert Number
 
 (define (convert-number n st) n)
 (define (quotable-number? n st) #true)
-(define try-quote-number? #false)
+(define prefer-quote-number? #false)
 
 (define number-expr-style-extension
   (expr-style-extension number?
     convert-number
     quotable-number?
-    try-quote-number?))
+    prefer-quote-number?))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Convert String
 
 (define (convert-string s st) (if (immutable? s) s `(string-copy ,s)))
 (define (quotable-string? s st) (immutable? s))
-(define try-quote-string? #false)
+(define prefer-quote-string? #false)
 
 (define string-expr-style-extension
   (expr-style-extension string?
     convert-string
     quotable-string?
-    try-quote-string?))
+    prefer-quote-string?))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Convert Byte String
 
 (define (convert-bytes b st) (if (immutable? b) b `(bytes-copy ,b)))
 (define (quotable-bytes? b st) (immutable? b))
-(define try-quote-bytes? #false)
+(define prefer-quote-bytes? #false)
 
 (define bytes-expr-style-extension
   (expr-style-extension bytes?
     convert-bytes
     quotable-bytes?
-    try-quote-bytes?))
+    prefer-quote-bytes?))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Convert Char
 
 (define (convert-char c st) c)
 (define (quotable-char? c st) #true)
-(define try-quote-char? #false)
+(define prefer-quote-char? #false)
 
 (define char-expr-style-extension
   (expr-style-extension char?
     convert-char
     quotable-char?
-    try-quote-char?))
+    prefer-quote-char?))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Convert Symbol
@@ -129,7 +129,7 @@
     (symbol->string s)))
 
 (define (quotable-symbol? s st) (symbol-interned? s))
-(define try-quote-symbol? #true)
+(define prefer-quote-symbol? #true)
 
 (define (symbol-constructor-name s)
   (cond!
@@ -141,46 +141,46 @@
   (expr-style-extension symbol?
     convert-symbol
     quotable-symbol?
-    try-quote-symbol?))
+    prefer-quote-symbol?))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Convert Regexp
 
 (define (convert-regexp rx st) rx)
 (define (quotable-regexp? rx st) #true)
-(define try-quote-regexp? #false)
+(define prefer-quote-regexp? #false)
 
 (define regexp-expr-style-extension
   (expr-style-extension regexp?
     convert-regexp
     quotable-regexp?
-    try-quote-regexp?))
+    prefer-quote-regexp?))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Convert Keyword
 
 (define (convert-keyword kw st) `(quote ,kw))
 (define (quotable-keyword? kw st) #true)
-(define try-quote-keyword? #true)
+(define prefer-quote-keyword? #true)
 
 (define keyword-expr-style-extension
   (expr-style-extension keyword?
     convert-keyword
     quotable-keyword?
-    try-quote-keyword?))
+    prefer-quote-keyword?))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Convert Null
 
 (define (convert-null mt st) 'empty)
 (define (quotable-null? mt st) #true)
-(define try-quote-null? #false)
+(define prefer-quote-null? #false)
 
 (define null-expr-style-extension
   (expr-style-extension null?
     convert-null
     quotable-null?
-    try-quote-null?))
+    prefer-quote-null?))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Convert List
@@ -195,13 +195,13 @@
   (for/and {[x (in-list xs)]}
     (stylish-quotable-value? x st)))
 
-(define try-quote-list? #true)
+(define prefer-quote-list? #true)
 
 (define list-expr-style-extension
   (expr-style-extension list?
     convert-list
     quotable-list?
-    try-quote-list?))
+    prefer-quote-list?))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Convert Improper List
@@ -228,13 +228,13 @@
           (quotable-tail? (cdr tail)))
         (stylish-quotable-value? tail st)))))
 
-(define try-quote-list*? #true)
+(define prefer-quote-list*? #true)
 
 (define list*-expr-style-extension
   (expr-style-extension list*?
     convert-list*
     quotable-list*?
-    try-quote-list*?))
+    prefer-quote-list*?))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Convert Pair
@@ -251,13 +251,13 @@
     (stylish-quotable-value? (car p) st)
     (stylish-quotable-value? (cdr p) st)))
 
-(define try-quote-pair? #true)
+(define prefer-quote-pair? #true)
 
 (define pair-expr-style-extension
   (expr-style-extension pair?
     convert-pair
     quotable-pair?
-    try-quote-pair?))
+    prefer-quote-pair?))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Convert Mutable Pair
@@ -270,13 +270,13 @@
     (convert-mcdr (mcdr p) st)))
 
 (define (quotable-mpair? p st) #false)
-(define try-quote-mpair? #false)
+(define prefer-quote-mpair? #false)
 
 (define mpair-expr-style-extension
   (expr-style-extension mpair?
     convert-mpair
     quotable-mpair?
-    try-quote-mpair?))
+    prefer-quote-mpair?))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Convert Vector
@@ -292,7 +292,7 @@
     (for/and {[x (in-vector vec)]}
       (stylish-quotable-value? x st))))
 
-(define try-quote-vector? #true)
+(define prefer-quote-vector? #true)
 
 (define (vector-constructor-name vec)
   (if (immutable? vec)
@@ -303,7 +303,7 @@
   (expr-style-extension vector?
     convert-vector
     quotable-vector?
-    try-quote-vector?))
+    prefer-quote-vector?))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Convert Box
@@ -317,7 +317,7 @@
   (and (immutable? b)
     (stylish-quotable-value? (unbox b) st)))
 
-(define try-quote-box? #true)
+(define prefer-quote-box? #true)
 
 (define (box-constructor-name b)
   (if (immutable? b)
@@ -328,7 +328,7 @@
   (expr-style-extension box?
     convert-box
     quotable-box?
-    try-quote-box?))
+    prefer-quote-box?))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Convert Hash
@@ -348,7 +348,7 @@
         (stylish-quotable-value? k st)
         (stylish-quotable-value? v st)))))
 
-(define try-quote-hash? #true)
+(define prefer-quote-hash? #true)
 
 (define (hash-constructor-name h)
   (cond!
@@ -372,7 +372,7 @@
   (expr-style-extension hash?
     convert-hash
     quotable-hash?
-    try-quote-hash?))
+    prefer-quote-hash?))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Convert Set
@@ -384,7 +384,7 @@
       (convert-elem x st))))
 
 (define (quotable-set? s st) #false)
-(define try-quote-set? #false)
+(define prefer-quote-set? #false)
 
 (define (set-constructor-name s)
   (cond!
@@ -396,20 +396,20 @@
   (expr-style-extension set?
     convert-set
     quotable-set?
-    try-quote-set?))
+    prefer-quote-set?))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Convert Void
 
 (define (convert-void v st) '(void))
 (define (quotable-void? v st) #false)
-(define try-quote-void? #false)
+(define prefer-quote-void? #false)
 
 (define void-expr-style-extension
   (expr-style-extension void?
     convert-void
     quotable-void?
-    try-quote-void?))
+    prefer-quote-void?))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Convert Prefab Struct
@@ -427,13 +427,13 @@
     (for/and {[y (in-list (prefab-fields x))]}
       (stylish-quotable-value? y st))))
 
-(define try-quote-prefab? #true)
+(define prefer-quote-prefab? #true)
 
 (define prefab-expr-style-extension
   (expr-style-extension prefab?
     convert-prefab
     quotable-prefab?
-    try-quote-prefab?))
+    prefer-quote-prefab?))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Convert (Transparent) Struct
@@ -446,7 +446,7 @@
       (convert-field y st))))
 
 (define (quotable-struct? x st) #false)
-(define try-quote-struct? #false)
+(define prefer-quote-struct? #false)
 
 (define (struct-constructor-name sym)
   (string->symbol
@@ -456,7 +456,7 @@
   (expr-style-extension struct?
     convert-struct
     quotable-struct?
-    try-quote-struct?))
+    prefer-quote-struct?))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Convert Promise
@@ -469,13 +469,13 @@
       '_)))
 
 (define (quotable-promise? p st) #false)
-(define try-quote-promise? #false)
+(define prefer-quote-promise? #false)
 
 (define promise-expr-style-extension
   (expr-style-extension promise?
     convert-promise
     quotable-promise?
-    try-quote-promise?))
+    prefer-quote-promise?))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Convert Syntax
@@ -498,13 +498,13 @@
     [else expr]))
 
 (define (quotable-syntax? stx st) #false)
-(define try-quote-syntax? #false)
+(define prefer-quote-syntax? #false)
 
 (define syntax-expr-style-extension
   (expr-style-extension syntax?
     convert-syntax
     quotable-syntax?
-    try-quote-syntax?))
+    prefer-quote-syntax?))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Convert Path
@@ -515,13 +515,13 @@
     `(quote ,(path-convention-type path))))
 
 (define (quotable-path? path st) #false)
-(define try-quote-path? #false)
+(define prefer-quote-path? #false)
 
 (define path-expr-style-extension
   (expr-style-extension path?
     convert-path
     quotable-path?
-    try-quote-path?))
+    prefer-quote-path?))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Convert Dictionary
@@ -550,10 +550,10 @@
 
 (define (dict-quotable? dict st) #false)
 
-(define try-quote-dict? #false)
+(define prefer-quote-dict? #false)
 
 (define dict-expr-style-extension
   (expr-style-extension dict?
     convert-dict
     dict-quotable?
-    try-quote-dict?))
+    prefer-quote-dict?))

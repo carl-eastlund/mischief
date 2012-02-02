@@ -81,7 +81,7 @@
           (cond!
             [(type-of name e st) =>
              (lambda (type)
-               ((print-type-printer type) e port))]
+               ((print-type-printer type) e port st))]
             [(print-style-default st) =>
              (lambda (default)
                (default e port))]

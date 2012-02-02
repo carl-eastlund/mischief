@@ -38,7 +38,7 @@
 ;; (Quotable T) = (Any ExprStyle -> Boolean)
 (struct expr-style [default extensions cache])
 (struct expr-cache [type-of convert quotable?] #:mutable)
-(struct expr-type [type? convert quotable? try-quote?])
+(struct expr-type [type? convert quotable? prefer-quote?])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public Definitions
@@ -82,8 +82,8 @@
 (define (expr-style-extension? x)
   (expr-type? x))
 
-(define (expr-style-extension type? convert quotable? try-quote?)
-  (expr-type type? convert quotable? try-quote?))
+(define (expr-style-extension type? convert quotable? prefer-quote?)
+  (expr-type type? convert quotable? prefer-quote?))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Private Definitions
@@ -94,7 +94,7 @@
       (lambda ()
         (delay
           (if (and
-                (try-quote? name x st)
+                (prefer-quote? name x st)
                 (quotable? name x st))
             `(quote ,x)
             (cond
@@ -107,9 +107,9 @@
               [else (error name
                       "cannot convert value: ~v" x)])))))))
 
-(define (try-quote? name x st)
+(define (prefer-quote? name x st)
   (cond
-    [(type-of name x st) => expr-type-try-quote?]
+    [(type-of name x st) => expr-type-prefer-quote?]
     [else #false]))
 
 (define (quotable? name x st)

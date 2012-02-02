@@ -142,8 +142,9 @@
   (log-debugf "Return:\n~e\n" s)
   s)
 
-(define (stylish-print-expr e [port (current-output-port)]
-          #:print-style [pst (current-print-style)]
+(define (stylish-print-expr e
+          [port (current-output-port)]
+          [pst (current-print-style)]
           #:left [left 0]
           #:right [right 0]
           #:columns [columns (current-stylish-print-columns)])
@@ -151,8 +152,9 @@
     (lambda (port)
       (print-expression 'stylish-print-expr e pst port))))
 
-(define (stylish-println-expr e [port (current-output-port)]
-          #:print-style [pst (current-print-style)]
+(define (stylish-println-expr e
+          [port (current-output-port)]
+          [pst (current-print-style)]
           #:left [left 0]
           #:columns [columns (current-stylish-print-columns)])
   (print-to-stylish-port 'stylish-println-expr port left 0 columns
@@ -161,7 +163,7 @@
   (newline port))
 
 (define (stylish-expr->string e
-          #:print-style [pst (current-print-style)]
+          [pst (current-print-style)]
           #:left [left 0]
           #:right [right 0]
           #:columns [columns (current-stylish-print-columns)])
@@ -184,7 +186,9 @@
       (parameterize {[current-output-port port]}
         body ...))))
 
-(define (stylish-print-separator port #:indent [indent 0] #:wide? [wide? #t])
+(define (stylish-print-separator port
+          #:indent [indent 0]
+          #:wide? [wide? #t])
   (print-separator 'stylish-print-separator port indent wide?))
 
 (define (stylish-quotable-value? v [est (current-expr-style)])
@@ -197,18 +201,25 @@
 (define current-expr-style (make-parameter empty-expr-style))
 (define current-stylish-print-columns (make-parameter 80))
 
-(define (stylish-extend-print-style pst #:after? [after? #false] . exts)
+(define (stylish-extend-print-style pst
+          #:after? [after? #false]
+          . exts)
   (extend-print-style pst after? exts))
 
-(define (stylish-extend-expr-style est #:after? [after? #false] . exts)
+(define (stylish-extend-expr-style est
+          #:after? [after? #false]
+          . exts)
   (extend-expr-style est after? exts))
 
 (define (stylish-print-style-extension type? printer)
   (print-style-extension type? printer))
 
 (define (stylish-expr-style-extension
-          type? convert [quotable? (const #false)] [try-quote? #true])
-  (expr-style-extension type? convert quotable? try-quote?))
+          type?
+          convert
+          [quotable? (const #false)]
+          [prefer-quote? #true])
+  (expr-style-extension type? convert quotable? prefer-quote?))
 
 (define (stylish-clear-print-style-cache! [pst (current-print-style)])
   (clear-print-style-cache! pst))

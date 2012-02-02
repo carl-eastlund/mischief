@@ -63,9 +63,9 @@
     (hash-has-key? special-keyword-table
       (special-keyword x))))
 
-(define (print-special x port)
+(define (print-special x port st)
   (write-string (special-prefix x) port)
-  (stylish-print-expr (special-contents x) port))
+  (stylish-print-expr (special-contents x) port st))
 
 (define (special-keyword x) (first x))
 (define (special-contents x) (second x))
@@ -87,7 +87,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Print ([Im]proper) Lists
 
-(define (print-list* x port
+(define (print-list* x port st
           #:left [left "("]
           #:right [right ")"]
           [indent 1]
@@ -96,20 +96,22 @@
   (unless (null? x)
     (call-with-stylish-port port
       (lambda (port)
-        (print-elem (car x) port)
-        (print-tail (cdr x) port indent print-elem))))
+        (print-elem (car x) port st)
+        (print-tail (cdr x) port st indent print-elem))))
   (write-string right port))
 
-(define (print-tail x port indent [print-elem stylish-print-expr])
+(define (print-tail x port st
+          [indent 1]
+          [print-elem stylish-print-expr])
   (cond
     [(null? x) (void)]
     [(pair? x)
      (stylish-print-separator port #:indent indent)
-     (print-elem (car x) port)
-     (print-tail (cdr x) port indent print-elem)]
-    [else (print-dotted x port indent print-elem)]))
+     (print-elem (car x) port st)
+     (print-tail (cdr x) port st indent print-elem)]
+    [else (print-dotted x port st indent print-elem)]))
 
-(define (print-pair x port
+(define (print-pair x port st
           #:left [left "("]
           #:right [right ")"]
           [indent 0]
@@ -118,35 +120,39 @@
   (write-string left port)
   (call-with-stylish-port port
     (lambda (port)
-      (print-car (car x) port)
-      (print-dotted (cdr x) port indent print-cdr)))
+      (print-car (car x) port st)
+      (print-dotted (cdr x) port st indent print-cdr)))
   (write-string right port))
 
-(define (print-dotted x port indent [print-elem stylish-print-expr])
+(define (print-dotted x port st
+          [indent 1]
+          [print-elem stylish-print-expr])
   (stylish-print-separator port #:indent indent)
   (write-string "." port)
   (stylish-print-separator port #:indent indent)
-  (print-elem x port))
+  (print-elem x port st))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Print Vector
 
-(define (print-vector vec port [print-elem stylish-print-expr])
+(define (print-vector vec port st
+          [print-elem stylish-print-expr])
   (write-string "#" port)
-  (print-list* #:left "[" #:right "]"
-    (vector->list vec) port 0 print-elem))
+  (print-list* (vector->list vec) port st
+    0 print-elem #:left "[" #:right "]"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Print Box
 
-(define (print-box b port [print-elem stylish-print-expr])
+(define (print-box b port st
+          [print-elem stylish-print-expr])
   (write-string "#&" port)
-  (print-elem (unbox b) port))
+  (print-elem (unbox b) port st))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Print Hash
 
-(define (print-hash ht port
+(define (print-hash ht port st
           [print-key stylish-print-expr]
           [print-value stylish-print-expr])
   (cond
@@ -156,27 +162,28 @@
   (print-list* #:left "{" #:right "}"
     (hash->list ht) port 0
     (lambda (kv port)
-      (print-pair #:left "[" #:right "]"
-        kv port 1 print-key print-value))))
+      (print-pair kv port st
+        1 print-key print-value #:left "[" #:right "]"))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Print Prefab Struct
 
-(define (print-prefab x port
+(define (print-prefab x port st
           [print-key stylish-print-expr]
           [print-value stylish-print-expr])
   (write-string "#s(" port)
   (call-with-stylish-port port
     (lambda (port)
-      (print-key (prefab-key x) port)
-      (print-tail (prefab-fields x) port 1 print-value)))
+      (print-key (prefab-key x) port st)
+      (print-tail (prefab-fields x) port st 1 print-value)))
   (write-string ")" port))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Print Comment
 
-(define (print-comment x port [print-expr stylish-print-expr])
-  (print-expr (stylish-comment-expr-expr x) port)
+(define (print-comment x port st
+          [print-expr stylish-print-expr])
+  (print-expr (stylish-comment-expr-expr x) port st)
   (stylish-print-separator port)
   (call-with-stylish-port port
     (lambda (port)
@@ -189,7 +196,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Print Unprintable
 
-(define (print-unprintable x port)
+(define (print-unprintable x port st)
   (write-string "#<" port)
   (display (stylish-unprintable-expr-name x) port)
   (write-string ">" port))
