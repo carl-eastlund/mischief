@@ -23,17 +23,17 @@
     (extend-print-style
       (set-print-style-default-printer
         empty-print-style
-        print-default)
-      (print-style-extension boolean? print-default)
-      (print-style-extension number? print-default)
-      (print-style-extension string? print-default)
-      (print-style-extension bytes? print-default)
-      (print-style-extension char? print-default)
-      (print-style-extension symbol? print-default)
-      (print-style-extension regexp? print-default)
-      (print-style-extension keyword? print-default)
+        write)
+      (print-style-extension boolean? print-atom)
+      (print-style-extension number? print-atom)
+      (print-style-extension string? print-atom)
+      (print-style-extension bytes? print-atom)
+      (print-style-extension char? print-atom)
+      (print-style-extension symbol? print-atom)
+      (print-style-extension regexp? print-atom)
+      (print-style-extension keyword? print-atom)
       (print-style-extension special? print-special)
-      (print-style-extension null? print-default)
+      (print-style-extension null? print-atom)
       (print-style-extension pair? print-list*)
       (print-style-extension vector? print-vector)
       (print-style-extension box? print-box)
@@ -48,7 +48,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Print Default
 
-(define (print-default x port)
+(define (print-atom x port)
   #;(print x port 1)
   (write x port))
 
