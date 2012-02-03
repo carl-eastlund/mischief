@@ -104,7 +104,10 @@
 
 (define (expand-in-scope stx
           #:scope [sc (current-scope)]
-          #:stop-at [stop #f])
+          #:stop-at [stop
+                     (match (scope-expansion-context sc)
+                       [(or 'expression 'module-begin) #false]
+                       [_ '()])])
   (local-expand stx
     (scope-expansion-context sc)
     (if stop (append (kernel-form-identifier-list) stop) null)
