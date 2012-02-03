@@ -48,7 +48,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Print Default
 
-(define (print-atom x port)
+(define (print-atom x port st)
   #;(print x port 1)
   (write x port))
 
