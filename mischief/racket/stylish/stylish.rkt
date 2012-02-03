@@ -26,7 +26,6 @@
   empty-print-style
   current-print-style
   set-print-style-default-printer
-  set-print-style-preserve-cache?
   print-style-extension?
   current-stylish-print-columns
 
@@ -37,16 +36,13 @@
   empty-expr-style
   current-expr-style
   set-expr-style-default-convert
-  set-expr-style-preserve-cache?
   expr-style-extension?
 
   (rename-out
     [stylish-extend-print-style extend-print-style]
     [stylish-extend-expr-style extend-expr-style]
     [stylish-expr-style-extension expr-style-extension]
-    [stylish-print-style-extension print-style-extension]
-    [stylish-clear-print-style-cache! clear-print-style-cache!]
-    [stylish-clear-expr-style-cache! clear-expr-style-cache!]))
+    [stylish-print-style-extension print-style-extension]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Imports
@@ -220,9 +216,3 @@
           [quotable? (const #false)]
           [prefer-quote? #true])
   (expr-style-extension type? convert quotable? prefer-quote?))
-
-(define (stylish-clear-print-style-cache! [pst (current-print-style)])
-  (clear-print-style-cache! pst))
-
-(define (stylish-clear-expr-style-cache! [est (current-expr-style)])
-  (clear-expr-style-cache! est))

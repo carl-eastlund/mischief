@@ -15,8 +15,6 @@
   empty-print-style
   extend-print-style
   set-print-style-default-printer
-  set-print-style-preserve-cache?
-  clear-print-style-cache!
 
   print-style-extension?
   print-style-extension)
@@ -36,14 +34,12 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Data Definitions
 
-;; PrintStyle = (print-style PrintDefault (List PrintType) (Maybe PrintCache))
+;; PrintStyle = (print-style PrintDefault (List PrintType))
 ;; PrintDefault = (Maybe (Any OutputPort -> Any))
-;; PrintCache = (Box (Hash Any (Promise Delimited)))
 ;; PrintType = {exists T (print-type (Type T) (Print T))}
 ;; (Type T) = (Any -> Boolean : T)
 ;; (Print T) = (T StylishPort -> Void)
-(struct print-style [default extensions cache])
-(struct print-cache [type-of delim-expr] #:mutable)
+(struct print-style [default extensions])
 (struct print-type [type? printer])
 
 ;; Delimited = (delimited Nat (List Token))
@@ -72,20 +68,15 @@
         [(stylish-port? port0) (stylish-port-enqueue! port0 d)]
         [else (render-delimited d port0 left right cols)]))))
 
-(define (print-expression name e st0 port)
-  (define st (set-print-style-preserve-cache? st0 #true))
-  (force
-    (hash-ref! (unbox (print-style-cache st)) e
-      (lambda ()
-        (delay
-          (cond!
-            [(type-of name e st) =>
-             (lambda (type)
-               ((print-type-printer type) e port st))]
-            [(print-style-default st) =>
-             (lambda (default)
-               (default e port))]
-            [else (error name "cannot print expression: ~v" e)]))))))
+(define (print-expression name e st port)
+  (cond!
+    [(type-of name e st) =>
+     (lambda (type)
+       ((print-type-printer type) e port st))]
+    [(print-style-default st) =>
+     (lambda (default)
+       (default e port))]
+    [else (error name "cannot print expression: ~v" e)]))
 
 (define (type-of name x st)
   (let find {[exts (print-style-extensions st)]}
@@ -100,30 +91,17 @@
     (separator indent wide?)))
 
 (define empty-print-style
-  (print-style #false empty #false))
+  (print-style #false empty))
 
 (define (extend-print-style st after? new-exts)
   (update print-style st
     [extensions (if after?
                   (append extensions new-exts)
-                  (append new-exts extensions))]
-    [cache (and cache (fresh-cache))]))
+                  (append new-exts extensions))]))
 
 (define (set-print-style-default-printer st new-default)
   (update print-style st
-    [default new-default]
-    [cache (and cache (fresh-cache))]))
-
-(define (set-print-style-preserve-cache? st preserve?)
-  (update print-style st
-    [cache (and preserve? (or cache (fresh-cache)))]))
-
-(define (clear-print-style-cache! st)
-  (cond!
-    [(print-style-cache st) =>
-     (lambda (cache)
-       (set-box! cache (make-weak-hasheq)))]
-    [else (void)]))
+    [default new-default]))
 
 (define (print-style-extension? x)
   (print-type? x))
@@ -242,6 +220,3 @@
 (define (space port [n 1])
   (for {[i (in-range n)]}
     (write-char #\space port)))
-
-(define (fresh-cache)
-  (box (make-weak-hasheq)))
