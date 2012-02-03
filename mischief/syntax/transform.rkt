@@ -81,14 +81,17 @@
           #:source [source #false]
           fmt . args)
   (define sym0 (apply format-symbol fmt args))
-  (define n (add1 (hash-ref fresh:base->count sym0 0)))
-  (define sym (if add-suffix? (format-symbol "~a~~~a" sym0 n) sym0))
-  (define mark (make-syntax-introducer))
-  (begin0 (mark (to-syntax sym #:source source))
-    ;; update the number of times we've seen this symbol
-    (hash-set! fresh:base->count sym0 n)
-    ;; keep the base in the table as long as its derivatives exist
-    (hash-set! fresh:sym->base sym sym0)))
+  (define sym
+    (cond
+      [add-suffix?
+       (define n (add1 (hash-ref fresh:base->count sym0 0)))
+       (begin0 (format-symbol "~a~~~a" sym0 n)
+         ;; update the number of times we've seen this symbol
+         (hash-set! fresh:base->count sym0 n)
+         ;; keep the base in the table as long as its derivatives exist
+         (hash-set! fresh:sym->base sym sym0))]
+      [else sym0]))
+  ((fresh-mark) (to-syntax sym #:source source)))
 
 (define fresh:base->count (make-weak-hasheq))
 (define fresh:sym->base (make-weak-hasheq))
