@@ -41,6 +41,7 @@
     mischief/racket/sort
     mischief/syntax/scope
     mischief/syntax/parse
+    mischief/syntax/dye-pack
     mischief/syntax/transform
     mischief/syntax/shorthand
     mischief/syntax/srcloc
