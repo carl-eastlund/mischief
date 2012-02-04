@@ -1,10 +1,12 @@
 #lang racket/base
 
 (provide
-  for/filter-list for*/filter-list
+  for/filter for*/filter
   for/filter-lists for*/filter-lists
-  for/append-list for*/append-list
+  for/append for*/append
   for/append-lists for*/append-lists
+  for/partition for*/partition
+  for/partition* for*/partition*
   for/fold/lists for*/fold/lists
   for/fold/filter-lists for*/fold/filter-lists
   for/fold/append-lists for*/fold/append-lists
@@ -12,6 +14,8 @@
   define/for/lists define/for*/lists
   define/for/filter-lists define/for*/filter-lists
   define/for/append-lists define/for*/append-lists
+  define/for/partition define/for*/partition
+  define/for/partition* define/for*/partition*
   define/for/fold/lists define/for*/fold/lists
   define/for/fold/filter-lists define/for*/fold/filter-lists
   define/for/fold/append-lists define/for*/fold/append-lists)
@@ -52,11 +56,11 @@
              (syntax-parser [(_ . :args/for*) #'define-body]))))]))
 
 (define-shorthand
-  (for/filter-list clauses:fold-clauses . body:block-body)
+  (for/filter clauses:fold-clauses . body:block-body)
   (for/filter-lists {xs} clauses . body))
 
 (define-shorthand
-  (for*/filter-list clauses:fold-clauses . body:block-body)
+  (for*/filter clauses:fold-clauses . body:block-body)
   (for*/filter-lists {xs} clauses . body))
 
 (define-loops
@@ -67,18 +71,17 @@
     (define-values {rxs.temp ...}
       (loop/fold {[rxs.temp '()] ...} clauses
         (define-values {x.temp ...} (block . body))
-        (values (cons x.temp rxs.temp) ...)))
+        (values (if x.temp (cons x.temp rxs.temp) rxs.temp) ...)))
     (define-values {xs ...}
-      (for/fold {[xs '()] ...} {[x.temp (in-list rxs.temp)] ...}
-        (values (if x.temp (cons x.temp xs) xs) ...)))
+      (values (reverse rxs.temp) ...))
     (values xs ...)))
 
 (define-shorthand
-  (for/append-list clauses:fold-clauses . body:block-body)
+  (for/append clauses:fold-clauses . body:block-body)
   (for/append-lists {xs} clauses . body))
 
 (define-shorthand
-  (for*/append-list clauses:fold-clauses . body:block-body)
+  (for*/append clauses:fold-clauses . body:block-body)
   (for*/append-lists {xs} clauses . body))
 
 (define-loops
@@ -91,8 +94,46 @@
         (define-values {xs0.temp ...} (block . body))
         (values (cons xs0.temp rxss.temp) ...)))
     (define-values {xs ...}
-      (for/fold {[xs '()] ...} {[xs0.temp (in-list rxss.temp)] ...}
-        (values (append xs0.temp xs) ...)))
+      (values
+        (for/fold {[xs '()]} {[xs0.temp (in-list rxss.temp)]}
+          (append xs0.temp xs))
+        ...))
+    (values xs ...)))
+
+(define-shorthand
+  (for/partition clauses:fold-clauses . body:block-body)
+  (for/partition* {[yes #true] [no #false]} clauses
+    (if (block . body) #true #false)))
+
+(define-shorthand
+  (for*/partition clauses:fold-clauses . body:block-body)
+  (for*/partition* {[yes #true] [no #false]} clauses
+    (if (block . body) #true #false)))
+
+(define-shorthand
+  (define/for/partition {yes:id no:id} clauses:fold-clauses . body:block-body)
+  (define/for/partition* {[yes #true] [no #false]} clauses
+    (if (block . body) #true #false)))
+
+(define-shorthand
+  (define/for*/partition {yes:id no:id} clauses:fold-clauses . body:block-body)
+  (define/for*/partition* {[yes #true] [no #false]} clauses
+    (if (block . body) #true #false)))
+
+(define-loops
+  (partition* loop/fold {[(~and xs:id rxs:temp-id) key ...] ...}
+    clauses:fold-clauses . body:block-body)
+  {xs ...}
+  (block
+    (define rxs.temp '()) ...
+    (loop/fold {} clauses
+      (define-values {k v} (block . body))
+      (case k
+        [(key ...) (set! rxs.temp (cons v rxs.temp))]
+        ...)
+      (values))
+    (define-values {xs ...}
+      (values (reverse rxs.temp) ...))
     (values xs ...)))
 
 (define-shorthand
@@ -113,8 +154,7 @@
         (define-values {x.temp ...} (block . body))
         (values (cons x.temp rxs.temp) ...)))
     (define-values {xs ...}
-      (for/fold {[xs '()] ...} {[x.temp (in-list rxs.temp)] ...}
-        (values (cons x.temp xs) ...)))
+      (values (reverse rxs.temp) ...))
     (values xs ...)))
 
 (define-shorthand
@@ -143,8 +183,7 @@
         (define-values {x*.temp ... y.temp ...} (block . body))
         (values x*.temp ... (cons y.temp rys.temp) ...)))
     (define-values {ys ...}
-      (for/fold {[ys '()] ...} {[y.temp (in-list rys.temp)] ...}
-        (values (cons y.temp ys) ...)))
+      (values (reverse rys.temp) ...))
     (values x ... ys ...)))
 
 (define-loops
@@ -159,8 +198,7 @@
         (define-values {x*.temp ... y.temp ...} (block . body))
         (values x*.temp ... (if y.temp (cons y.temp rys.temp) rys.temp) ...)))
     (define-values {ys ...}
-      (for/fold {[ys '()] ...} {[y.temp (in-list rys.temp)] ...}
-        (values (cons y.temp ys) ...)))
+      (values (reverse rys.temp) ...))
     (values x ... ys ...)))
 
 (define-loops
@@ -175,6 +213,8 @@
         (define-values {x*.temp ... ys0.temp ...} (block . body))
         (values x*.temp ... (cons ys0.temp ryss.temp) ...)))
     (define-values {ys ...}
-      (for/fold {[ys '()] ...} {[ys0.temp (in-list ryss.temp)] ...}
-        (values (append ys0.temp ys) ...)))
+      (values
+        (for/fold {[ys '()]} {[ys0.temp (in-list ryss.temp)]}
+          (append ys0.temp ys))
+        ...))
     (values x ... ys ...)))

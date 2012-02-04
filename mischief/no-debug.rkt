@@ -13,7 +13,8 @@
 
 (require
   (for-syntax
-    racket/base))
+    racket/base
+    syntax/parse))
 
 (define-syntax define/debug
   (make-rename-transformer #'define))
@@ -21,7 +22,9 @@
 (define-syntax debug
   (make-rename-transformer #'#%app))
 
-(define-syntax-rule (debug* . e) e)
+(define-syntax (debug* stx)
+  (syntax-parse stx
+    [(_ . e) #'e]))
 
 (define dummy (make-keyword-procedure void))
 

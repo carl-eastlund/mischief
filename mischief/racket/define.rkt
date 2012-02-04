@@ -13,7 +13,8 @@
     racket/base
     racket/list
     racket/match
-    racket/syntax))
+    racket/syntax
+    syntax/parse))
 
 (define-syntax (at-end stx)
   (syntax-case stx ()
@@ -34,11 +35,13 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define-syntax-rule (define-single-definition define-one define-many)
-  (define-syntax define-one
-    (syntax-rules []
-      [(_ (head . args) . body) (define-one head (lambda args . body))]
-      [(_ name expr) (define-many [name] expr)])))
+(define-syntax (define-single-definition stx)
+  (syntax-parse stx
+    [(define-single-definition define-one define-many)
+     #'(define-syntax (define-one stx)
+         (syntax-parse stx
+           [(_ (head . args) . body) #'(define-one head (lambda args . body))]
+           [(_ name expr) #'(define-many [name] expr)]))]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;

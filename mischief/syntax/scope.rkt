@@ -115,7 +115,7 @@
 
 (define (expand-in-scope-for-syntax stx
           #:scope [sc initial-scope]
-          #:stop-at [stop #f])
+          #:stop-at [stop #false])
   (local-transformer-expand stx
     (scope-expansion-context sc)
     (if stop (append (kernel-form-identifier-list) stop) null)

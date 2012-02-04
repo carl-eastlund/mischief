@@ -50,8 +50,8 @@
      #'(!dbg call-and-debug fmt arg ...
          #:thunk
          (lambda ()
-           (let {[fun-var (debug* fun)]
-                 [arg-var (debug* arg.value)]
+           (let {[fun-var (debug* . fun)]
+                 [arg-var (debug* . arg.value)]
                  ...}
              (fun-var arg-key/var ... ...))))]))
 
@@ -69,7 +69,7 @@
 
 (define-syntax (debug* stx)
   (syntax-parse stx
-    [(_ e:expr)
+    [(_ . e:expr)
      (define/syntax-parse [fmt arg ...]
        (syntax->format/args (attribute e)))
      #'(!dbg call-and-debug fmt arg ...
