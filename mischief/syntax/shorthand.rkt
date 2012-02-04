@@ -3,7 +3,8 @@
 (provide
   define-shorthand
   define-aliases
-  define-alias)
+  define-alias
+  with-aliases)
 
 (require
   (for-syntax
@@ -42,3 +43,10 @@
      (syntax/loc stx
        (define-syntax alias
          (make-rename-transformer #'name)))]))
+
+(define-syntax (with-aliases stx)
+  (syntax-parse stx
+    [(_ {[alias:id name:id] ...} body:expr ...+)
+     (syntax/loc stx
+       (let-syntax {[alias (make-rename-transformer #'name)] ...}
+         body ...))]))
