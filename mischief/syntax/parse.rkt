@@ -167,15 +167,15 @@
 
 (define-syntax-class (static-binding static-pred static-desc)
   #:description static-desc
-  #:attributes {value}
+  #:attributes {value delta}
   (pattern x
-    #:fail-unless (identifier? #'x)
+    #:fail-unless (identifier? (@ x))
     (format "expected ~a, but found ~a"
       static-desc "a non-identifier")
-    #:fail-unless (identifier-binding #'x)
+    #:fail-unless (identifier-binding (@ x))
     (format "expected ~a, but found ~a"
       static-desc "an unbound identifier")
-    #:do {(define maybe (scope-static-value #'x #:success yes #:failure no))}
+    #:do {(define maybe (scope-static-value (@ x) #:success yes #:failure no))}
     #:fail-unless (yes? maybe)
     (format "expected ~a, but found ~a"
       static-desc "an identifier bound as a value")
@@ -184,7 +184,8 @@
     (format "expected ~a, but found ~a"
       static-desc
       (format "an identifier bound as syntax to ~v"
-        (attribute value)))))
+        (attribute value)))
+    #:attr delta (scope-delta-introducer (@ x))))
 
 (define-syntax-class/specialize static-id
   (static-binding (const #true) "an identifier bound as syntax"))

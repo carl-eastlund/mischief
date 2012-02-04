@@ -13,7 +13,10 @@
   racket/function)
 
 (define (map-map f . xs^3)
-  (apply map (arg+ map f) xs^3))
+  (apply map
+    (lambda xs^2
+      (apply map f xs^2))
+    xs^3))
 
 (define (make-alist keys value)
   (for/list {[key (in-list keys)]}
