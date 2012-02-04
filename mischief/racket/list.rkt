@@ -1,7 +1,7 @@
 #lang racket/base
 
 (provide
-  make-alist build-alist
+  make-alist build-alist map-map
   member? memv? memq?
   take-while drop-while
   take-until drop-until
@@ -11,6 +11,9 @@
   racket/list
   racket/match
   racket/function)
+
+(define (map-map f . xs^3)
+  (apply map (arg+ map f) xs^3))
 
 (define (make-alist keys value)
   (for/list {[key (in-list keys)]}
