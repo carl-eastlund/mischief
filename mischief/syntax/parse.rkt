@@ -185,7 +185,16 @@
       static-desc
       (format "an identifier bound as syntax to ~v"
         (attribute value)))
-    #:attr delta (scope-delta-introducer (@ x))))
+    #:attr delta
+    ;; do not compute delta until we need it
+    (let* {[proc #false]
+           [scope (current-scope)]}
+      (lambda (stx)
+        (unless proc
+          (set! proc
+            (scope-delta-introducer (@ x)
+              #:scope scope)))
+        (proc stx)))))
 
 (define-syntax-class/specialize static-id
   (static-binding (const #true) "an identifier bound as syntax"))
