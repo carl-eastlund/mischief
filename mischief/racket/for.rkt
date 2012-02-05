@@ -108,17 +108,20 @@
 (define-shorthand
   (for*/partition clauses:fold-clauses . body:block-body)
   (for*/partition* {[yes #true] [no #false]} clauses
-    (if (block . body) #true #false)))
+    (define-values {? x} (block . body))
+    (values (if ? #true #false) x)))
 
 (define-shorthand
   (define/for/partition {yes:id no:id} clauses:fold-clauses . body:block-body)
   (define/for/partition* {[yes #true] [no #false]} clauses
-    (if (block . body) #true #false)))
+    (define-values {? x} (block . body))
+    (values (if ? #true #false) x)))
 
 (define-shorthand
   (define/for*/partition {yes:id no:id} clauses:fold-clauses . body:block-body)
   (define/for*/partition* {[yes #true] [no #false]} clauses
-    (if (block . body) #true #false)))
+    (define-values {? x} (block . body))
+    (values (if ? #true #false) x)))
 
 (define-loops
   (partition* loop/fold {[(~and xs:id rxs:temp-id) key ...] ...}
