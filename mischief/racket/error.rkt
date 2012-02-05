@@ -12,15 +12,17 @@
     syntax/parse
     mischief/syntax/transform)
   racket/port
-  syntax/location
   syntax/srcloc
-  mischief/racket/function)
+  mischief/racket/function
+  mischief/syntax/location)
 
 (define-syntax impossible
   (id-transformer
     (syntax-parser
       [self:id
-       #'(make-impossible (quote self) (quote-srcloc self))])))
+       #'(make-impossible
+           (quote self)
+           (quote-srcloc/smart self))])))
 
 (define (make-impossible name loc)
   (define/keywords (proc ks vs . xs)

@@ -22,13 +22,13 @@
     mischief/syntax/parse)
   racket/match
   racket/function
-  syntax/location
   syntax/srcloc
   mischief/racket/boolean
   mischief/racket/error
   mischief/racket/string
   mischief/racket/function
-  mischief/racket/stylish)
+  mischief/racket/stylish
+  mischief/syntax/location)
 
 (define-syntax (debug stx)
 
@@ -62,7 +62,7 @@
       [(source-location-known? stx)
        (list #'"~s [~a]"
          #'(quote e)
-         #'(source-location->string (quote-srcloc e)))]
+         #'(source-location->string (quote-srcloc/smart e)))]
       [else
        (list #'"~s"
          #'(quote e))])))

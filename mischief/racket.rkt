@@ -45,4 +45,5 @@
     mischief/syntax/transform
     mischief/syntax/shorthand
     mischief/syntax/srcloc
+    mischief/syntax/location
     mischief/syntax/fold))
