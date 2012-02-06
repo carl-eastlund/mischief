@@ -108,18 +108,20 @@
                      (match (scope-expansion-context sc)
                        [(or 'expression 'module-begin) #false]
                        [_ '()])])
-  (local-expand stx
-    (scope-expansion-context sc)
-    (if stop (append (kernel-form-identifier-list) stop) null)
-    (scope-definition-context sc)))
+  (parameterize {[current-scope initial-scope]}
+    (local-expand stx
+      (scope-expansion-context sc)
+      (if stop (append (kernel-form-identifier-list) stop) null)
+      (scope-definition-context sc))))
 
 (define (expand-in-scope-for-syntax stx
           #:scope [sc initial-scope]
           #:stop-at [stop #false])
-  (local-transformer-expand stx
-    (scope-expansion-context sc)
-    (if stop (append (kernel-form-identifier-list) stop) null)
-    (scope-definition-context sc)))
+  (parameterize {[current-scope initial-scope]}
+    (local-transformer-expand stx
+      (scope-expansion-context sc)
+      (if stop (append (kernel-form-identifier-list) stop) null)
+      (scope-definition-context sc))))
 
 (define (in-scope stx #:scope [sc (current-scope)])
   (define temp (generate-temporary))
