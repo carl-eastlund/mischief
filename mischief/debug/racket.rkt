@@ -4,7 +4,9 @@
   (for-syntax
     mischief/racket)
   racket/provide-syntax
-  mischief/debug)
+  mischief/debug
+  (for-template
+    mischief/debug/syntax))
 
 (define-provide-syntax (debug-out stx)
   (syntax-parse stx
@@ -21,4 +23,7 @@
     (all-from-out mischief/racket)
     #%app
     define
-    lambda))
+    lambda)
+  (for-template
+    (rename-out
+      [define-syntax/debug define-syntax])))
