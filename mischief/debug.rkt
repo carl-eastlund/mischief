@@ -2,6 +2,8 @@
 
 (provide
   define/debug
+  lambda/debug
+  #%app/debug
   debug
   debug*
   debug-value
@@ -55,6 +57,9 @@
                  ...}
              (fun-var arg-key/var ... ...))))]))
 
+(define-syntax #%app/debug
+  (make-rename-transformer #'debug))
+
 (begin-for-syntax
   (define (syntax->format/args stx)
     (define/syntax-parse e stx)
@@ -94,6 +99,20 @@
      #'(define name
          (!dbg call-and-debug fmt arg ...
            #:thunk (lambda () (#%expression body))))]))
+
+(define-syntax (lambda/debug stx)
+  (syntax-parse stx
+    [(form args:kw-formals . body:block-body)
+     (define/syntax-parse [desc-fmt desc-arg ...]
+       (syntax->format/args (attribute form)))
+     #'(lambda args
+         (!dbg call-and-debug desc-fmt desc-arg ...
+           #:thunk
+           (lambda ()
+             (!dbg debug-value "Argument ~s:" 'args.formal-id
+               #:value args.formal-id)
+             ...
+             . body)))]))
 
 (define (call-and-debug #:thunk thunk fmt . args)
   (apply !dbg call-with-debug-frame fmt args

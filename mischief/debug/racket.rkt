@@ -1,0 +1,24 @@
+#lang mischief/racket
+
+(require
+  (for-syntax
+    mischief/racket)
+  racket/provide-syntax
+  mischief/debug)
+
+(define-provide-syntax (debug-out stx)
+  (syntax-parse stx
+    [(_ spec:expr name:id ...)
+     (define/syntax-parse {name/debug ...}
+       (for/list {[stx (in-list (@ name))]}
+         (format-id stx #:source stx "~a/debug" stx)))
+     #'(combine-out
+         (except-out spec name ...)
+         (rename-out [name/debug name] ...))]))
+
+(provide
+  (debug-out
+    (all-from-out mischief/racket)
+    #%app
+    define
+    lambda))
