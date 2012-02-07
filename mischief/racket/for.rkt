@@ -102,7 +102,8 @@
 (define-shorthand
   (for/partition clauses:fold-clauses . body:block-body)
   (for/partition* {[yes #true] [no #false]} clauses
-    (if (block . body) #true #false)))
+    (define-values {? x} (block . body))
+    (values (if ? #true #false) x)))
 
 (define-shorthand
   (for*/partition clauses:fold-clauses . body:block-body)
