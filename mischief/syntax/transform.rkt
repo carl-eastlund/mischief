@@ -101,16 +101,19 @@
   (parameterize {[current-syntax-context stx]}
     (f stx)))
 
+(define (self-transform f stx)
+  (syntax-parse stx
+    [x:id (f #'x)]
+    [((~literal set!) x:id e:expr)
+     (to-syntax #:stx stx
+       (list #'set! (f #'x) #'e))]
+    [(x:id . args)
+     (to-syntax #:stx stx
+       (list* '#%app (f #'x) #'args))]))
+
 (define (self-transformer f)
   (lambda (stx)
-    (syntax-parse stx
-      [x:id (f #'x)]
-      [((~literal set!) x:id e:expr)
-       (to-syntax #:stx stx
-         (list #'set! (f #'x) #'e))]
-      [(x:id . args)
-       (to-syntax #:stx stx
-         (list* '#%app (f #'x) #'args))])))
+    (self-transform f stx)))
 
 (define (do-macro-transform mt stx)
   (transform stx
@@ -138,7 +141,7 @@
       [else (error 'id-transform
               "expected second argument to be a procedure or syntax, got ~v"
               proc/stx)]))
-  ((id-transformer proc/stx) stx))
+  (self-transform proc stx))
 
 (struct macro-transformer [proc]
   #:omit-define-syntaxes

@@ -6,7 +6,7 @@
   for/append for*/append
   for/append-lists for*/append-lists
   for/partition for*/partition
-  for/partition* for*/partition*
+  for/partition-lists for*/partition-lists
   for/fold/lists for*/fold/lists
   for/fold/filter-lists for*/fold/filter-lists
   for/fold/append-lists for*/fold/append-lists
@@ -15,7 +15,7 @@
   define/for/filter-lists define/for*/filter-lists
   define/for/append-lists define/for*/append-lists
   define/for/partition define/for*/partition
-  define/for/partition* define/for*/partition*
+  define/for/partition-lists define/for*/partition-lists
   define/for/fold/lists define/for*/fold/lists
   define/for/fold/filter-lists define/for*/fold/filter-lists
   define/for/fold/append-lists define/for*/fold/append-lists)
@@ -101,41 +101,41 @@
 
 (define-shorthand
   (for/partition clauses:fold-clauses . body:block-body)
-  (for/partition* {[yes #true] [no #false]} clauses
-    (define-values {? x} (block . body))
-    (values (if ? #true #false) x)))
+  (for/partition-lists {[yes no]} clauses . body))
 
 (define-shorthand
   (for*/partition clauses:fold-clauses . body:block-body)
-  (for*/partition* {[yes #true] [no #false]} clauses
-    (define-values {? x} (block . body))
-    (values (if ? #true #false) x)))
+  (for*/partition-lists {[yes no]} clauses . body))
 
 (define-shorthand
   (define/for/partition {yes:id no:id} clauses:fold-clauses . body:block-body)
-  (define/for/partition* {[yes #true] [no #false]} clauses
-    (define-values {? x} (block . body))
-    (values (if ? #true #false) x)))
+  (define/for/partition-lists {[yes no]} clauses . body))
 
 (define-shorthand
   (define/for*/partition {yes:id no:id} clauses:fold-clauses . body:block-body)
-  (define/for*/partition* {[yes #true] [no #false]} clauses
-    (define-values {? x} (block . body))
-    (values (if ? #true #false) x)))
+  (define/for*/partition-lists {[yes no]} clauses . body))
 
 (define-loops
-  (partition* loop/fold {[(~and xs:id rxs:temp-id) key ...] ...}
+  (partition-lists loop/fold
+      {(~and v:temp-id
+         [(~and xs:id rxs:temp-id)
+          (~and ys:id rys:temp-id)])
+       ...}
     clauses:fold-clauses . body:block-body)
   {xs ...}
   (block
-    (define rxs.temp '()) ...
+    (define-values {rxs.temp rys.temp}
+      (values '() '()))
+    ...
     (loop/fold {} clauses
-      (define-values {k v} (block . body))
-      (case k
-        [(key ...) (set! rxs.temp (cons v rxs.temp))]
-        ...)
+      (define-values {then v ...} (block . body))
+      (cond
+        [then (set! rxs.temp (cons v rxs.temp)) ...]
+        [else (set! rys.temp (cons v rys.temp)) ...])
       (values))
-    (values (reverse rxs.temp) ...)))
+    (values
+      (reverse rxs.temp) ...
+      (reverse rys.temp) ...)))
 
 (define-shorthand
   (define/for/lists {xs:id ...} clauses:fold-clauses . body:block-body)

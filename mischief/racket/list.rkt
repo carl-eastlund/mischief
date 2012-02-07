@@ -3,6 +3,7 @@
 (provide
   make-alist build-alist map-map
   member? memv? memq?
+  partition*
   take-while drop-while
   take-until drop-until
   sort/unique)
@@ -11,6 +12,24 @@
   racket/list
   racket/match
   racket/function)
+
+(define (partition* f . xss)
+  (define-values {yes no}
+    (let loop {[xss xss]}
+      (cond
+        [(andmap empty? xss)
+         (values xss xss)]
+        [(andmap cons? xss)
+         (define xs (map first xss))
+         (define ? (apply f xs))
+         (define-values {yes no}
+           (loop (map rest xss)))
+         (if ?
+           (values (map cons xs yes) no)
+           (values yes (map cons xs no)))]
+        [else (error 'partition* "given lists have different lengths")])))
+  (apply values
+    (append yes no)))
 
 (define (map-map f . xs^3)
   (apply map

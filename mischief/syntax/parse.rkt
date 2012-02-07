@@ -145,8 +145,8 @@
 
 (define-syntax-class temp-id
   #:attributes {temp}
-  (pattern x
-    #:attr temp (generate-temporary #'x)))
+  (pattern x #:attr temp (generate-temporary #'x))
+  (pattern _ #:attr temp (generate-temporary)))
 
 (define-syntax-class (datum-literal datum-pred datum-desc)
   #:description datum-desc
