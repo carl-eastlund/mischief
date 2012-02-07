@@ -45,8 +45,11 @@
            (define-syntax-class (args loop-id)
              #:attributes {loop-body define-body}
              (pattern pat
-               #:attr loop-body (with-syntax {[loop loop-id]} #'loop-tem)
-               #:attr define-body #'(define-values var-tem loop-body)))
+               #:attr define-body
+               (with-syntax {[loop loop-id]}
+                 #'(define-values var-tem loop-tem))
+               #:attr loop-body
+               #'(block define-body (values . var-tem))))
            (define-syntax-class/specialize args/for (args #'for/fold))
            (define-syntax-class/specialize args/for* (args #'for*/fold))
            (values
@@ -72,9 +75,7 @@
       (loop/fold {[rxs.temp '()] ...} clauses
         (define-values {x.temp ...} (block . body))
         (values (if x.temp (cons x.temp rxs.temp) rxs.temp) ...)))
-    (define-values {xs ...}
-      (values (reverse rxs.temp) ...))
-    (values xs ...)))
+    (values (reverse rxs.temp) ...)))
 
 (define-shorthand
   (for/append clauses:fold-clauses . body:block-body)
@@ -93,12 +94,10 @@
       (loop/fold {[rxss.temp '()] ...} clauses
         (define-values {xs0.temp ...} (block . body))
         (values (cons xs0.temp rxss.temp) ...)))
-    (define-values {xs ...}
-      (values
-        (for/fold {[xs '()]} {[xs0.temp (in-list rxss.temp)]}
-          (append xs0.temp xs))
-        ...))
-    (values xs ...)))
+    (values
+      (for/fold {[xs '()]} {[xs0.temp (in-list rxss.temp)]}
+        (append xs0.temp xs))
+      ...)))
 
 (define-shorthand
   (for/partition clauses:fold-clauses . body:block-body)
@@ -135,9 +134,7 @@
         [(key ...) (set! rxs.temp (cons v rxs.temp))]
         ...)
       (values))
-    (define-values {xs ...}
-      (values (reverse rxs.temp) ...))
-    (values xs ...)))
+    (values (reverse rxs.temp) ...)))
 
 (define-shorthand
   (define/for/lists {xs:id ...} clauses:fold-clauses . body:block-body)
@@ -156,9 +153,7 @@
       (loop/fold {[rxs.temp '()] ...} clauses
         (define-values {x.temp ...} (block . body))
         (values (cons x.temp rxs.temp) ...)))
-    (define-values {xs ...}
-      (values (reverse rxs.temp) ...))
-    (values xs ...)))
+    (values (reverse rxs.temp) ...)))
 
 (define-shorthand
   (define/for/fold {[x:id e:expr] ...} clauses:fold-clauses . body:block-body)

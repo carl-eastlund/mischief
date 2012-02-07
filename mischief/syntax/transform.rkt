@@ -6,6 +6,7 @@
   rename-transformer
   macro-transformer
   id-transformer
+  id-transform
   to-syntax
   to-datum
   fresh
@@ -111,16 +112,16 @@
        (to-syntax #:stx stx
          (list* '#%app (f #'x) #'args))])))
 
-(define (macro-transform mt stx)
+(define (do-macro-transform mt stx)
   (transform stx
     (macro-transformer-proc mt)))
 
-(define (id-transform it stx)
+(define (do-id-transform it stx)
   (transform stx
     (self-transformer
       (id-transformer-proc it))))
 
-(define (rename-transform rt stx)
+(define (do-rename-transform rt stx)
   (transform stx
     (self-transformer
       (const (rename-transformer-target rt)))))
@@ -129,17 +130,27 @@
   (apply values
     (map rename-transformer ids)))
 
+(define (id-transform stx proc/stx)
+  (define proc
+    (cond
+      [(procedure? proc/stx) proc/stx]
+      [(syntax? proc/stx) (const proc/stx)]
+      [else (error 'id-transform
+              "expected second argument to be a procedure or syntax, got ~v"
+              proc/stx)]))
+  ((id-transformer proc/stx) stx))
+
 (struct macro-transformer [proc]
   #:omit-define-syntaxes
-  #:property prop:procedure macro-transform
-  #:property prop:set!-transformer macro-transform)
+  #:property prop:procedure do-macro-transform
+  #:property prop:set!-transformer do-macro-transform)
 
 (struct id-transformer [proc]
   #:omit-define-syntaxes
-  #:property prop:procedure id-transform
-  #:property prop:set!-transformer id-transform)
+  #:property prop:procedure do-id-transform
+  #:property prop:set!-transformer do-id-transform)
 
 (struct rename-transformer [target]
   #:omit-define-syntaxes
-  #:property prop:procedure rename-transform
+  #:property prop:procedure do-rename-transform
   #:property prop:rename-transformer 0)
