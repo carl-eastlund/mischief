@@ -118,6 +118,5 @@
   (let loop {[arg0 arg0] [args args]}
     (cond
       [(null? args) arg0]
-      [else (if arg0
-              (cons arg0 (loop (car args) (cdr args)))
+      [else (cons/optional arg0
               (loop (car args) (cdr args)))])))
