@@ -4,6 +4,9 @@
 ;; Imports
 
 (require
+  (for-syntax
+    racket/base
+    syntax/parse)
   racket/dict
   racket/match
   racket/contract
@@ -15,6 +18,7 @@
 ;; Exports
 
 (provide
+  define-flat-rec-contract
   predicate/c)
 (provide/contract
   [dict/c (-> contract? contract? contract?)]
@@ -49,6 +53,12 @@
 
 ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Implementation
+
+(define-syntax (define-flat-rec-contract stx)
+  (syntax-parse stx
+    [(_ name:id alt:expr ...)
+     #'(define name
+         (flat-rec-contract name alt ...))]))
 
 (define-if-unbound predicate/c
   (-> any/c boolean?))
