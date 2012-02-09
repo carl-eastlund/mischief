@@ -2,7 +2,7 @@
 
 (provide
   @
-  datum
+  self-quoting
   formals
   kw-formals
   fold-clauses
@@ -93,8 +93,8 @@
            #:phase #,phase
            [ref ...]))]))
 
-(define-syntax-class datum
-  (pattern _))
+(define-syntax-class self-quoting
+  (pattern (~not (~or _:id _:keyword (_ . _)))))
 
 (define-syntax-class formals
   (pattern (arg-id:id ... . (~or rest-id?:id ()))

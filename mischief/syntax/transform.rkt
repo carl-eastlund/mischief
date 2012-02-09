@@ -12,6 +12,9 @@
   fresh
   format-fresh
   fresh-mark
+  identifier-upcase
+  identifier-titlecase
+  identifier-downcase
   syntax-local-variable-reference)
 
 (require
@@ -69,6 +72,23 @@
 
 (define (fresh-mark)
   (make-syntax-introducer))
+
+(define (identifier-rename rename id0)
+  (define sym0 (syntax-e id0))
+  (define str0 (symbol->string sym0))
+  (define str (rename str0))
+  (define sym (string->symbol str))
+  (define id (to-syntax #:stx id0 sym))
+  id)
+
+(define (identifier-upcase id)
+  (identifier-rename string-upcase id))
+
+(define (identifier-downcase id)
+  (identifier-rename string-downcase id))
+
+(define (identifier-titlecase id)
+  (identifier-rename string-titlecase id))
 
 (define (fresh [x 'fresh]
           #:add-suffix? [add-suffix? #true]
