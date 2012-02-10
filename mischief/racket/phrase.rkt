@@ -81,7 +81,10 @@
               (for/list {[kw (in-list keywords)]}
                 (format "~s" keywords))))]))
 
-(define (list->phrase xs #:none [none "none"] #:separator [sep ","])
+(define (list->phrase xs
+          #:none [none "none"]
+          #:separator [sep ","]
+          #:final [final "and"])
   (cond
     [(empty? xs) none]
     [(empty? (rest xs)) (first xs)]
@@ -90,5 +93,8 @@
     [else (apply string-append
             (let loop {[xs xs]}
               (cond
-                [(empty? (rest xs)) (list "and " (first xs))]
+                [(empty? (rest xs))
+                 (if final
+                   (list final " " (first xs))
+                   (list (first xs)))]
                 [else (list* (first xs) sep " " (loop (rest xs)))])))]))
