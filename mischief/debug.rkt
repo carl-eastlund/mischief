@@ -48,7 +48,7 @@
      (define/syntax-parse {[arg-key/var ...] ...}
        #'{[arg.key-prefix ... arg-var] ...})
      (define/syntax-parse [fmt arg ...]
-       (syntax->format/args (attribute app)))
+       (syntax->format/args "application: " (attribute app)))
      #'(!dbg call-and-debug fmt arg ...
          #:thunk
          (lambda ()
@@ -61,22 +61,24 @@
   (make-rename-transformer #'debug))
 
 (begin-for-syntax
-  (define (syntax->format/args stx)
+  (define (syntax->format/args prefix stx)
     (define/syntax-parse e stx)
     (cond
       [(source-location-known? stx)
-       (list #'"~s [~a]"
+       (list #'"~a~s [~a]"
+         #`(quote #,prefix)
          #'(quote e)
          #'(source-location->string (quote-srcloc/smart e)))]
       [else
-       (list #'"~s"
+       (list #'"~a~s"
+         #`(quote #,prefix)
          #'(quote e))])))
 
 (define-syntax (debug* stx)
   (syntax-parse stx
     [(_ . e:expr)
      (define/syntax-parse [fmt arg ...]
-       (syntax->format/args (attribute e)))
+       (syntax->format/args "expression: " (attribute e)))
      #'(!dbg call-and-debug fmt arg ...
          #:thunk (lambda () (#%expression e)))]))
 
@@ -84,7 +86,7 @@
   (syntax-parse stx
     [(_ (name:id . args:kw-formals) . body:block-body)
      (define/syntax-parse [desc-fmt desc-arg ...]
-       (syntax->format/args (attribute name)))
+       (syntax->format/args "function: " (attribute name)))
      #'(define (name . args)
          (!dbg call-and-debug desc-fmt desc-arg ...
            #:thunk
@@ -95,7 +97,7 @@
              . body)))]
     [(_ name:id body:expr)
      (define/syntax-parse [fmt arg ...]
-       (syntax->format/args  (attribute name)))
+       (syntax->format/args "definition: " (attribute name)))
      #'(define name
          (!dbg call-and-debug fmt arg ...
            #:thunk (lambda () (#%expression body))))]))
@@ -104,7 +106,7 @@
   (syntax-parse stx
     [(form args:kw-formals . body:block-body)
      (define/syntax-parse [desc-fmt desc-arg ...]
-       (syntax->format/args (attribute form)))
+       (syntax->format/args "" (attribute form)))
      #'(lambda args
          (!dbg call-and-debug desc-fmt desc-arg ...
            #:thunk
