@@ -1,6 +1,7 @@
 #lang racket/base
 
 (provide
+  check-duplicate-label
   label-id-representative
   label-identifier=?
   label-identifier-hash-code
@@ -12,16 +13,28 @@
   racket/dict
   mischief/syntax/transform)
 
-(define symbol-table
-  (make-weak-hasheq))
+(define (check-duplicate-label ids)
+  (define table (make-label-id-table))
+  (for/or {[id (in-list ids)]}
+    (cond
+      [(dict-has-key? table id) id]
+      [else
+       (dict-set! table id #true)
+       #false])))
 
-(define (label-id-representative id)
-  (to-syntax #:stx id
-    (hash-ref! symbol-table (syntax-e id)
-      (lambda ()
-        (string->uninterned-symbol
-          (symbol->string
-            (syntax-e id)))))))
+(define (label-id-representative original-id)
+  (define unbound-id
+    (to-syntax #:context id
+      unique-symbol))
+  (define delta
+    (make-syntax-delta-introducer unbound-id #false))
+  (delta
+    (to-syntax
+      (syntax-e original-id))))
+
+(define unique-symbol
+  (string->uninterned-symbol
+    "unique-unbound-name"))
 
 (define (label-identifier=? one two)
   (and (eq? (syntax-e one) (syntax-e two))
