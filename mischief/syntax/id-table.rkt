@@ -24,7 +24,7 @@
 
 (define (label-id-representative original-id)
   (define unbound-id
-    (to-syntax #:context id
+    (to-syntax #:context original-id
       unique-symbol))
   (define delta
     (make-syntax-delta-introducer unbound-id #false))
