@@ -17,7 +17,9 @@
     syntax/parse
     syntax/srcloc
     macro-debugger/emit)
-  racket/block)
+  racket/bool
+  racket/block
+  mischief/racket/define)
 
 (define-syntax (cond! stx)
 
@@ -80,8 +82,10 @@
 
 (struct exn:fail:cond! exn:fail [] #:transparent)
 
-(define-syntax-rule (implies a b)
-  (if a b #t))
+(define-syntax-if-unbound (implies stx)
+  (syntax-parse stx
+    [(_ a:expr b:expr)
+     #'(if a b #true)]))
 
 (define (implies? a b)
   (implies a b))
@@ -92,7 +96,7 @@
 (define (or? . bs)
   (for/or {[b (in-list bs)]} b))
 
-(define (xor a b)
+(define-if-unbound (xor a b)
   (if a
     (if b #f a)
     (if b b #f)))
