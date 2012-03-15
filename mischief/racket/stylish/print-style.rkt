@@ -32,7 +32,6 @@
       (print-style-extension symbol? print-atom)
       (print-style-extension regexp? print-atom)
       (print-style-extension keyword? print-atom)
-      (print-style-extension special? print-special)
       (print-style-extension null? print-atom)
       (print-style-extension pair? print-list*)
       (print-style-extension vector? print-vector)
@@ -53,38 +52,6 @@
   (write x port))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Print Special
-
-(define (special? x)
-  (and (list? x)
-    (cons? x)
-    (cons? (rest x))
-    (empty? (rest (rest x)))
-    (hash-has-key? special-keyword-table
-      (special-keyword x))))
-
-(define (print-special x port st)
-  (write-string (special-prefix x) port)
-  (stylish-print-expr (special-contents x) port st))
-
-(define (special-keyword x) (first x))
-(define (special-contents x) (second x))
-(define (special-prefix x)
-  (hash-ref special-keyword-table
-    (special-keyword x)))
-
-(define special-keyword-table
-  (hasheq
-    'quote "'"
-    'quasiquote "`"
-    'unquote ","
-    'unquote-splicing ",@"
-    'syntax "#'"
-    'quasisyntax "#`"
-    'unsyntax "#,"
-    'unsyntax-splicing "#,@"))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Print ([Im]proper) Lists
 
 (define (print-list* x port st
@@ -92,18 +59,28 @@
           #:right [right ")"]
           [indent 1]
           [print-elem stylish-print-expr])
-  (write-string left port)
-  (unless (null? x)
-    (call-with-stylish-port port
-      (lambda (port)
-        (print-elem (car x) port st)
-        (print-tail (cdr x) port st indent print-elem))))
-  (write-string right port))
+  (cond
+    [(special? x)
+     (print-special x port st print-elem)]
+    [(null? x)
+     (write-string left port)
+     (write-string right port)]
+    [else
+     (write-string left port)
+     (call-with-stylish-port port
+       (lambda (port)
+         (print-elem (car x) port st)
+         (print-tail (cdr x) port st indent print-elem)))
+     (write-string right port)]))
 
 (define (print-tail x port st
           [indent 1]
           [print-elem stylish-print-expr])
   (cond
+    [(special? x)
+     (print-dotted x port st indent
+       (lambda (x port st)
+         (print-special x port st print-elem)))]
     [(null? x) (void)]
     [(pair? x)
      (stylish-print-separator port #:indent indent)
@@ -131,6 +108,35 @@
   (write-string "." port)
   (stylish-print-separator port #:indent indent)
   (print-elem x port st))
+
+(define (special? x)
+  (and (list? x)
+    (cons? x)
+    (cons? (rest x))
+    (empty? (rest (rest x)))
+    (hash-has-key? special-keyword-table
+      (special-keyword x))))
+
+(define (print-special x port st [print-contents stylish-print-expr])
+  (write-string (special-prefix x) port)
+  (print-contents (special-contents x) port st))
+
+(define (special-keyword x) (first x))
+(define (special-contents x) (second x))
+(define (special-prefix x)
+  (hash-ref special-keyword-table
+    (special-keyword x)))
+
+(define special-keyword-table
+  (hasheq
+    'quote "'"
+    'quasiquote "`"
+    'unquote ","
+    'unquote-splicing ",@"
+    'syntax "#'"
+    'quasisyntax "#`"
+    'unsyntax "#,"
+    'unsyntax-splicing "#,@"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Print Vector
