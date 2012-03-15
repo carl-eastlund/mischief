@@ -2,6 +2,8 @@
 
 (provide
   @
+  syntax-class/c
+  syntax-parse/c
   self-quoting
   formals
   kw-formals
@@ -30,6 +32,7 @@
     racket/require-transform
     racket/syntax
     syntax/parse)
+  racket/contract
   racket/function
   racket/list
   racket/bool
@@ -45,6 +48,22 @@
 
 (define-syntax @
   (make-rename-transformer #'attribute))
+
+(define-syntax (syntax-class/c stx)
+  (syntax-parse stx
+    [(_ class:id)
+     #'(flat-named-contract '(syntax-class/c class)
+         (lambda (x)
+           (and (syntax? x)
+             (syntax-matches? x (~var _ class)))))]))
+
+(define-syntax (syntax-parse/c stx)
+  (syntax-parse stx
+    [(_ pat ...)
+     #'(flat-named-contract '(syntax-parse/c pat ...)
+         (lambda (x)
+           (and (syntax? x)
+             (syntax-matches? x pat ...))))]))
 
 (define-syntax (syntax-matcher stx)
   (syntax-parse stx
