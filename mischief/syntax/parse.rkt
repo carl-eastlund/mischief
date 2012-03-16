@@ -12,6 +12,7 @@
   block-body
   temp-id
   datum-literal
+  literal
   module-path
   bound-id
   static-id
@@ -173,6 +174,13 @@
   (pattern x
     #:attr value (syntax->datum #'x)
     #:when (datum-pred (attribute value))))
+
+(define-syntax-class (literal v)
+  #:description (format "~s" v)
+  #:attributes {value}
+  (pattern x
+    #:attr value (syntax->datum #'x)
+    #:when (equal? (attribute value) v)))
 
 (define-syntax-class/specialize module-path
   (datum-literal module-path? "a module path"))
