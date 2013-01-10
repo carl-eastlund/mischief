@@ -3,46 +3,165 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Exports
 
+(require racket/contract)
+
 (provide
 
-  stylish-format
-  stylish-printf
-
-  stylish-print
-  stylish-println
-  stylish-value->string
-
-  stylish-print-expr
-  stylish-println-expr
-  stylish-expr->string
-  stylish-print-separator
-  call-with-stylish-port
   with-stylish-port
 
-  stylish-quotable-value?
-  stylish-value->expr
+  (contract-out
 
-  print-style?
-  empty-print-style
-  current-print-style
-  set-print-style-default-printer
-  print-style-extension?
-  current-stylish-print-columns
+    [stylish-format
+     (->*
+         {string?}
+         {#:expr-style expr-style?
+          #:print-style print-style?
+          #:left exact-nonnegative-integer?
+          #:right exact-nonnegative-integer?
+          #:columns (or/c exact-nonnegative-integer? 'infinity)}
+       #:rest list?
+       string?)]
+    [stylish-printf
+     (->*
+         {string?}
+         {#:port output-port?
+          #:expr-style expr-style?
+          #:print-style print-style?
+          #:left exact-nonnegative-integer?
+          #:right exact-nonnegative-integer?
+          #:columns (or/c exact-nonnegative-integer? 'infinity)}
+       #:rest list?
+       void?)]
 
-  (struct-out stylish-comment-expr)
-  (struct-out stylish-unprintable-expr)
+    [stylish-print
+     (->*
+         {any/c}
+         {output-port?
+          #:expr-style expr-style?
+          #:print-style print-style?
+          #:left exact-nonnegative-integer?
+          #:right exact-nonnegative-integer?
+          #:columns (or/c exact-nonnegative-integer? 'infinity)}
+       void?)]
+    [stylish-println
+     (->*
+         {any/c}
+         {output-port?
+          #:expr-style expr-style?
+          #:print-style print-style?
+          #:left exact-nonnegative-integer?
+          #:columns (or/c exact-nonnegative-integer? 'infinity)}
+       void?)]
+    [stylish-value->string
+     (->*
+         {any/c}
+         {#:expr-style expr-style?
+          #:print-style print-style?
+          #:left exact-nonnegative-integer?
+          #:right exact-nonnegative-integer?
+          #:columns (or/c exact-nonnegative-integer? 'infinity)}
+       string?)]
 
-  expr-style?
-  empty-expr-style
-  current-expr-style
-  set-expr-style-default-convert
-  expr-style-extension?
+    [stylish-print-expr
+     (->*
+         {any/c}
+         {output-port?
+          print-style?
+          #:left exact-nonnegative-integer?
+          #:right exact-nonnegative-integer?
+          #:columns (or/c exact-nonnegative-integer? 'infinity)}
+       void?)]
+    [stylish-println-expr
+     (->*
+         {any/c}
+         {output-port?
+          print-style?
+          #:left exact-nonnegative-integer?
+          #:columns (or/c exact-nonnegative-integer? 'infinity)}
+       void?)]
+    [stylish-expr->string
+     (->*
+         {any/c}
+         {print-style?
+          #:left exact-nonnegative-integer?
+          #:right exact-nonnegative-integer?
+          #:columns (or/c exact-nonnegative-integer? 'infinity)}
+       string?)]
+    [stylish-print-separator
+     (->*
+         {output-port?}
+         {#:indent exact-nonnegative-integer?
+          #:wide? boolean?}
+       void?)]
+    [call-with-stylish-port
+     (->*
+         {output-port?
+          (-> output-port? any)}
+         {#:left exact-nonnegative-integer?
+          #:right exact-nonnegative-integer?
+          #:columns (or/c exact-nonnegative-integer? 'infinity)}
+       any)]
 
-  (rename-out
-    [stylish-extend-print-style extend-print-style]
-    [stylish-extend-expr-style extend-expr-style]
-    [stylish-expr-style-extension expr-style-extension]
-    [stylish-print-style-extension print-style-extension]))
+    [stylish-quotable-value?
+     (->*
+         {any/c}
+         {expr-style?}
+       boolean?)]
+    [stylish-value->expr
+     (->*
+         {any/c}
+         {expr-style?}
+       any/c)]
+
+    [print-style? predicate/c]
+    [empty-print-style print-style?]
+    [current-print-style (parameter/c print-style?)]
+    [set-print-style-default-printer
+     (->
+       print-style?
+       (or/c (-> any/c output-port? void?) #false)
+       print-style?)]
+    [print-style-extension? predicate/c]
+    [current-stylish-print-columns
+     (parameter/c (or/c exact-nonnegative-integer? 'infinity))]
+
+    (struct stylish-comment-expr {[comment any/c] [expr any/c]})
+    (struct stylish-unprintable-expr {[name any/c]})
+
+    [expr-style? predicate/c]
+    [empty-expr-style expr-style?]
+    [current-expr-style (parameter/c expr-style?)]
+    [set-expr-style-default-convert
+     (->
+       expr-style?
+       (or/c (-> any/c any/c) #false)
+       expr-style?)]
+    [expr-style-extension? predicate/c]
+
+    (rename stylish-extend-print-style extend-print-style
+      (->*
+          {print-style?}
+          {#:after? boolean?}
+        #:rest (listof print-style-extension?)
+        print-style?))
+    (rename stylish-extend-expr-style extend-expr-style
+      (->*
+          {expr-style?}
+          {#:after? boolean?}
+        #:rest (listof expr-style-extension?)
+        expr-style?))
+    (rename stylish-expr-style-extension expr-style-extension
+      (->*
+          {predicate/c
+           (-> any/c expr-style? any/c)}
+          {(-> any/c expr-style? boolean?)
+           boolean?}
+        expr-style-extension?))
+    (rename stylish-print-style-extension print-style-extension
+      (->
+        predicate/c
+        (-> any/c output-port? print-style? any)
+        print-style-extension?))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Imports
@@ -146,7 +265,8 @@
           #:columns [columns (current-stylish-print-columns)])
   (print-to-stylish-port 'stylish-print-expr port left right columns
     (lambda (port)
-      (print-expression 'stylish-print-expr e pst port))))
+      (print-expression 'stylish-print-expr e pst port)
+      (void))))
 
 (define (stylish-println-expr e
           [port (current-output-port)]

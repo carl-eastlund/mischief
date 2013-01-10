@@ -47,4 +47,7 @@
     mischief/syntax/srcloc
     mischief/syntax/location
     mischief/syntax/fold
-    mischief/syntax/id-table))
+    mischief/syntax/id-table)
+  (for-syntax
+    (only-meta-in 0
+      racket)))

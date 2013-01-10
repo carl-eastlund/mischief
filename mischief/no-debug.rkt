@@ -2,6 +2,9 @@
 
 (provide
   define/debug
+  lambda/debug
+  case-lambda/debug
+  #%app/debug
   debug
   debug*
   debug-value
@@ -18,6 +21,15 @@
 
 (define-syntax define/debug
   (make-rename-transformer #'define))
+
+(define-syntax lambda/debug
+  (make-rename-transformer #'lambda))
+
+(define-syntax case-lambda/debug
+  (make-rename-transformer #'case-lambda))
+
+(define-syntax #%app/debug
+  (make-rename-transformer #'#%app))
 
 (define-syntax debug
   (make-rename-transformer #'#%app))

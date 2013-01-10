@@ -3,6 +3,7 @@
 (provide
   define/debug
   lambda/debug
+  case-lambda/debug
   #%app/debug
   debug
   debug*
@@ -116,6 +117,22 @@
              ...
              . body)))]))
 
+(define-syntax (case-lambda/debug stx)
+  (syntax-parse stx
+    [(form [args:formals . body:block-body] ...)
+     (define/syntax-parse [desc-fmt desc-arg ...]
+       (syntax->format/args "" (attribute form)))
+     #'(case-lambda
+         [args
+          (!dbg call-and-debug desc-fmt desc-arg ...
+            #:thunk
+            (lambda ()
+              (!dbg debug-value "Argument ~s:" 'args.formal-id
+                #:value args.formal-id)
+              ...
+              . body))]
+         ...)]))
+
 (define (call-and-debug #:thunk thunk fmt . args)
   (apply !dbg call-with-debug-frame fmt args
     #:thunk
@@ -183,7 +200,7 @@
           fmt . args)
   (!dbg dprintf #:prefix prefix "~a"
     (apply !dbg stylish-format
-      #:columns (- columns (indent-length) (string-length prefix))
+      #:columns (max 1 (- columns (indent-length) (string-length prefix)))
       #:expr-style est
       #:print-style pst
       fmt args)))

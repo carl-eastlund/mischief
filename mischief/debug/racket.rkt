@@ -2,6 +2,7 @@
 
 (require
   (for-syntax
+    racket
     mischief/racket)
   racket/provide-syntax
   mischief/debug
@@ -26,4 +27,6 @@
     lambda)
   (for-template
     (rename-out
-      [define-syntax/debug define-syntax])))
+      [define-syntax/debug define-syntax]))
+  (for-syntax
+    (all-from-out racket)))

@@ -166,7 +166,7 @@
     [(hash-eqv? ht) (write-string "#hasheqv" port)]
     [(hash-equal? ht) (write-string "#hash" port)])
   (print-list* #:left "{" #:right "}"
-    (hash->list ht) port 0
+    (hash->list ht) port st 0
     (lambda (kv port)
       (print-pair kv port st
         1 print-key print-value #:left "[" #:right "]"))))
