@@ -1,0 +1,24 @@
+
+# Racket generated files
+*.zo
+*.dep
+compiled/
+
+# DrRacket generated files
+*.bak
+
+# LaTeX generated files
+*.aux
+*.log
+*.out
+*.bbl
+*.blg
+
+# Emacs generated files
+*~
+.\#*
+\#*\#
+
+# Mac OS X generated files
+.DS_Store
+__MACOSX
