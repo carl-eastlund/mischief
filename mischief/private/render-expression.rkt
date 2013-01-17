@@ -8,9 +8,9 @@
   racket/port
   racket/list
   racket/block
-  mischief/racket/list
-  mischief/racket/struct
-  mischief/racket/match)
+  mischief/list
+  mischief/struct
+  mischief/match)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Expression to String

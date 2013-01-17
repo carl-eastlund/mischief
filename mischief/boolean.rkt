@@ -19,7 +19,7 @@
     macro-debugger/emit)
   racket/bool
   racket/block
-  mischief/racket/define)
+  mischief/define)
 
 (define-syntax (cond! stx)
 

@@ -4,12 +4,12 @@
 ;; Imports and Exports
 
 (require
-  mischief/racket/require)
+  mischief/require)
 
 (require/provide
-  mischief/racket/stylish/stylish
-  mischief/racket/stylish/print-style
-  mischief/racket/stylish/expr-style)
+  mischief/stylish/stylish
+  mischief/stylish/print-style
+  mischief/stylish/expr-style)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Dynamic Configuration

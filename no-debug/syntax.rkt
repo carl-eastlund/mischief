@@ -1,4 +1,4 @@
-#lang mischief/racket
+#lang mischief
 
 (provide
   (rename-out

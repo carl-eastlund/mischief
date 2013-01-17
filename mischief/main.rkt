@@ -1,5 +1,5 @@
 #lang racket/base
-(require mischief/racket/require)
+(require mischief/require)
 (require/provide
   (only-meta-in 0
     racket
@@ -19,35 +19,35 @@
     syntax/srcloc
     syntax/location
     syntax/strip-context
-    mischief/racket/values
-    mischief/racket/error
-    mischief/racket/dict
-    mischief/racket/for
-    mischief/racket/list
-    mischief/racket/contract
-    mischief/racket/match
-    mischief/racket/function
-    mischief/racket/boolean
-    mischief/racket/maybe
-    mischief/racket/quotation
-    mischief/racket/phrase
-    mischief/racket/stylish
-    mischief/racket/string
-    mischief/racket/struct
-    mischief/racket/visitor
-    mischief/racket/memoize
-    mischief/racket/require
-    mischief/racket/module
-    mischief/racket/sort
-    mischief/syntax/scope
-    mischief/syntax/parse
-    mischief/syntax/dye-pack
-    mischief/syntax/transform
-    mischief/syntax/shorthand
-    mischief/syntax/srcloc
-    mischief/syntax/location
-    mischief/syntax/fold
-    mischief/syntax/id-table)
+    mischief/values
+    mischief/error
+    mischief/dict
+    mischief/for
+    mischief/list
+    mischief/contract
+    mischief/match
+    mischief/function
+    mischief/boolean
+    mischief/maybe
+    mischief/quotation
+    mischief/phrase
+    mischief/stylish
+    mischief/string
+    mischief/struct
+    mischief/visitor
+    mischief/memoize
+    mischief/require
+    mischief/module
+    mischief/sort
+    mischief/scope
+    mischief/parse
+    mischief/dye-pack
+    mischief/transform
+    mischief/shorthand
+    mischief/srcloc
+    mischief/location
+    mischief/fold
+    mischief/id-table)
   (for-syntax
     (only-meta-in 0
       racket)))

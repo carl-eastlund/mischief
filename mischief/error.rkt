@@ -10,11 +10,11 @@
   (for-syntax
     racket/base
     syntax/parse
-    mischief/syntax/transform)
+    mischief/transform)
   racket/port
   syntax/srcloc
-  mischief/racket/function
-  mischief/syntax/location)
+  mischief/function
+  mischief/location)
 
 (define-syntax impossible
   (id-transformer

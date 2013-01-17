@@ -8,9 +8,9 @@
     racket/base
     syntax/parse
     syntax/srcloc
-    mischief/syntax/transform
-    mischief/syntax/fold
-    mischief/racket/boolean))
+    mischief/transform
+    mischief/fold
+    mischief/boolean))
 
 (begin-for-syntax
 

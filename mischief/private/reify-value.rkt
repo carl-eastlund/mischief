@@ -10,9 +10,9 @@
   racket/function
   racket/set
   racket/promise
-  mischief/racket/match
-  mischief/racket/function
-  mischief/racket/struct)
+  mischief/match
+  mischief/function
+  mischief/struct)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Value to Expression

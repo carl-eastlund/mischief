@@ -28,8 +28,8 @@
   racket/promise
   racket/block
   data/queue
-  mischief/racket/struct
-  mischief/racket/boolean)
+  mischief/struct
+  mischief/boolean)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Data Definitions

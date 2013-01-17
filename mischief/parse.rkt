@@ -41,10 +41,10 @@
   racket/struct-info
   syntax/parse
   syntax/parse/experimental/specialize
-  mischief/racket/list
-  mischief/racket/boolean
-  mischief/racket/maybe
-  mischief/syntax/scope
+  mischief/list
+  mischief/boolean
+  mischief/maybe
+  mischief/scope
   (only-in srfi/1 list-index))
 
 (define-syntax @

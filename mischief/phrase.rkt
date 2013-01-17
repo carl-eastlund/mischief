@@ -7,8 +7,8 @@
 
 (require
   racket/list
-  mischief/racket/boolean
-  mischief/racket/function)
+  mischief/boolean
+  mischief/function)
 
 (define procedure-arity->phrase
   (case-lambda

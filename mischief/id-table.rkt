@@ -11,7 +11,7 @@
 
 (require
   racket/dict
-  mischief/syntax/transform)
+  mischief/transform)
 
 (define (check-duplicate-label ids)
   (define table (make-label-id-table))

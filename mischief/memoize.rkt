@@ -18,10 +18,10 @@
     racket/syntax
     syntax/name
     syntax/parse
-    mischief/syntax/parse)
+    mischief/parse)
   racket/list
   racket/promise
-  mischief/racket/function)
+  mischief/function)
 
 ;; MemoTable = (memo-table Cache)
 ;; Cache = (WeakHashEq Key (Value Key))

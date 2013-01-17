@@ -23,10 +23,10 @@
     racket/base
     racket/syntax
     syntax/parse
-    mischief/syntax/parse)
+    mischief/parse)
   racket/match
   racket/list
-  mischief/racket/list)
+  mischief/list)
 
 (define-syntax update
   (syntax-parser

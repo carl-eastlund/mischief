@@ -14,10 +14,10 @@
   racket/dict
   racket/promise
   syntax/srcloc
-  mischief/racket/boolean
-  mischief/racket/define
-  mischief/racket/struct
-  mischief/racket/stylish/stylish)
+  mischief/boolean
+  mischief/define
+  mischief/struct
+  mischief/stylish/stylish)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public Definitions

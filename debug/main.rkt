@@ -20,18 +20,18 @@
     racket/syntax
     syntax/parse
     syntax/srcloc
-    mischief/racket/boolean
-    mischief/syntax/srcloc
-    mischief/syntax/parse)
+    mischief/boolean
+    mischief/srcloc
+    mischief/parse)
   racket/match
   racket/function
   syntax/srcloc
-  mischief/racket/boolean
-  mischief/racket/error
-  mischief/racket/string
-  mischief/racket/function
-  mischief/racket/stylish
-  mischief/syntax/location)
+  mischief/boolean
+  mischief/error
+  mischief/string
+  mischief/function
+  mischief/stylish
+  mischief/location)
 
 (define-syntax (debug stx)
 

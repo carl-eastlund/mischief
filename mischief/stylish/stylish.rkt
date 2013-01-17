@@ -169,9 +169,9 @@
 (require
   racket/function
   racket/port
-  mischief/racket/stylish/format
-  mischief/racket/stylish/expression
-  mischief/racket/stylish/print)
+  mischief/stylish/format
+  mischief/stylish/expression
+  mischief/stylish/print)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Debugging Definition

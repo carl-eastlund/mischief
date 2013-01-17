@@ -18,7 +18,7 @@
     racket/base
     syntax/name
     syntax/parse
-    mischief/syntax/parse)
+    mischief/parse)
   racket/promise)
 
 (define (dynamic-wrap-procedure proc wrap)

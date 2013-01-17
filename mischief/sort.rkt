@@ -5,8 +5,8 @@
 
 (require
   data/queue
-  mischief/racket/match
-  mischief/racket/list
+  mischief/match
+  mischief/list
   mischief/no-debug)
 
 (define/debug (topological-sort todo elem->deps

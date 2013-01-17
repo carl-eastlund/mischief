@@ -5,8 +5,8 @@
 
 (require
   racket/promise
-  mischief/racket/for
-  mischief/racket/function)
+  mischief/for
+  mischief/function)
 
 (define (datum-fold x
           #:short-circuit [process-short-circuit default-process-short-circuit]

@@ -30,10 +30,10 @@
   racket/block
   racket/function
   racket/set
-  mischief/racket/list
-  mischief/racket/function
-  mischief/racket/struct
-  mischief/racket/memoize)
+  mischief/list
+  mischief/function
+  mischief/struct
+  mischief/memoize)
 
 (define/keywords (visit ks vs the-visitor the-value . xs)
 

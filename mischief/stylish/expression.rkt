@@ -22,7 +22,7 @@
 (require
   racket/list
   racket/promise
-  mischief/racket/struct)
+  mischief/struct)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Data Definitions

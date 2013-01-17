@@ -11,7 +11,7 @@
   racket/match
   racket/contract
   racket/pretty
-  mischief/racket/define
+  mischief/define
   syntax/srcloc)
 
 ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

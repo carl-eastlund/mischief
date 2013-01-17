@@ -13,9 +13,9 @@
   racket/port
   racket/list
   racket/match
-  mischief/racket/stylish/expression
-  mischief/racket/stylish/print
-  mischief/racket/boolean)
+  mischief/stylish/expression
+  mischief/stylish/print
+  mischief/boolean)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public Definitions

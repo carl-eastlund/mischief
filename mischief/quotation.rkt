@@ -7,7 +7,7 @@
 (require
   racket/mpair
   racket/function
-  mischief/racket/function
+  mischief/function
   srfi/67)
 
 (define (quotation value #:custom [custom (const #f)])

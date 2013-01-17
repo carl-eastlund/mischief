@@ -8,12 +8,12 @@
   (for-syntax
     racket/base
     syntax/parse
-    mischief/syntax/transform)
+    mischief/transform)
   racket/match
   racket/pretty
   racket/string
-  mischief/racket/function
-  mischief/syntax/location
+  mischief/function
+  mischief/location
   syntax/srcloc)
 
 (struct exn:fail:match! exn:fail [inputs srclocs]

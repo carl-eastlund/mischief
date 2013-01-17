@@ -1,9 +1,9 @@
-#lang mischief/racket
+#lang mischief
 
 (require
   (for-syntax
     racket
-    mischief/racket)
+    mischief)
   racket/provide-syntax
   mischief/debug
   (for-template
@@ -21,7 +21,7 @@
 
 (provide
   (debug-out
-    (all-from-out mischief/racket)
+    (all-from-out mischief)
     #%app
     define
     lambda)

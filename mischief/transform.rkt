@@ -23,8 +23,8 @@
   racket/syntax
   syntax/parse
   syntax/srcloc
-  mischief/syntax/fold
-  mischief/racket/visitor
+  mischief/fold
+  mischief/visitor
   (for-template
     racket/base))
 

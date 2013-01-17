@@ -27,10 +27,10 @@
     racket/syntax
     syntax/parse
     syntax/parse/experimental/specialize
-    mischief/syntax/parse)
+    mischief/parse)
   racket/list
   racket/block
-  mischief/syntax/shorthand)
+  mischief/shorthand)
 
 (define-syntax (define-loops stx)
   (syntax-parse stx

@@ -11,9 +11,9 @@
 
 (require
   racket/list
-  mischief/racket/define
-  mischief/racket/struct
-  mischief/racket/stylish/stylish)
+  mischief/define
+  mischief/struct
+  mischief/stylish/stylish)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public Definition

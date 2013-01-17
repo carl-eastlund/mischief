@@ -1,2 +1,2 @@
-#lang mischief/racket
-(provide (all-from-out mischief/racket))
+#lang mischief
+(provide (all-from-out mischief))

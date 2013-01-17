@@ -1,11 +1,11 @@
-#lang mischief/racket
+#lang mischief
 
 (provide
   define-syntax/debug)
 
 (require
   (for-syntax
-    mischief/racket
+    mischief
     mischief/debug))
 
 (define-syntax (define-syntax/debug stx)
