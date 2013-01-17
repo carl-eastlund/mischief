@@ -6,16 +6,15 @@
 (require
   data/queue
   mischief/match
-  mischief/list
-  mischief/no-debug)
+  mischief/list)
 
-(define/debug (topological-sort todo elem->deps
+(define (topological-sort todo elem->deps
                 #:cycle [cycle cycle-error])
 
   (define elem~>status (make-hasheq))
   (define done (make-queue))
 
-  (define/debug (visit elem [seen '()])
+  (define (visit elem [seen '()])
     (match! (hash-ref elem~>status elem 'todo)
       ['done (void)]
       ['seen

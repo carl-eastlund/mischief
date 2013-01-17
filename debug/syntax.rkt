@@ -6,7 +6,7 @@
 (require
   (for-syntax
     mischief
-    mischief/debug))
+    debug))
 
 (define-syntax (define-syntax/debug stx)
   (syntax-parse stx

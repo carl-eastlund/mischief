@@ -5,9 +5,9 @@
     racket
     mischief)
   racket/provide-syntax
-  mischief/debug
+  debug
   (for-template
-    mischief/debug/syntax))
+    debug/syntax))
 
 (define-provide-syntax (debug-out stx)
   (syntax-parse stx

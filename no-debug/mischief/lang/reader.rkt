@@ -1,2 +1,2 @@
 #lang s-exp syntax/module-reader
-mischief/no-debug/racket
+no-debug/mischief
