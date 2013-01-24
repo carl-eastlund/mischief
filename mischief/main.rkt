@@ -19,6 +19,7 @@
     syntax/srcloc
     syntax/location
     syntax/strip-context
+    mischief/define
     mischief/values
     mischief/error
     mischief/dict

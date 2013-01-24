@@ -6,7 +6,10 @@
   define-if-unbound
   define-values-if-unbound
   define-syntax-if-unbound
-  define-syntaxes-if-unbound)
+  define-syntaxes-if-unbound
+  define-provide-pre-syntax
+  undefined
+  undefined-out)
 
 (require
   (for-syntax
@@ -14,7 +17,94 @@
     racket/list
     racket/match
     racket/syntax
-    syntax/parse))
+    syntax/parse
+    racket/provide-transform)
+  syntax/location
+  syntax/srcloc)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;;  Provide Pre-Transformer Definitions
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define-syntax (define-provide-pre-syntax stx)
+  (syntax-parse stx
+    [(_ name:id proc:expr)
+     #'(define-syntax name
+         (make-provide-pre-transformer proc))]
+    [(_ (name:id . args) . body)
+     #'(define-syntax name
+         (make-provide-pre-transformer
+           (lambda args . body)))]))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;;  Definition Placeholders
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define-syntax (undefined stx)
+  (syntax-parse stx
+    [(_ name:id ...)
+     #`(define-syntaxes {name ...}
+         (undefined-transformers #:source (quote-syntax #,stx)
+           (quote-syntax name) ...))]))
+
+(define-provide-pre-syntax (undefined-out stx modes)
+  (syntax-parse stx
+    [(_ name:id ...)
+     (define/syntax-parse [temp ...]
+       (generate-temporaries (attribute name)))
+     (syntax-local-lift-module-end-declaration
+       (syntax/loc stx (undefined temp ...)))
+     #'(rename-out [temp name] ...)]))
+
+(begin-for-syntax
+  (define (undefined-transformers #:source [source #false] . name-stxs)
+    (apply values
+      (for/list {[name-stx (in-list name-stxs)]}
+        (define source-stx
+          (or source name-stx))
+        (make-set!-transformer
+          (lambda {stx}
+            (define ref-stx
+              (syntax-parse stx
+                [(~or ({~literal set!} ~! ref:id _:expr) (ref:id . _) ref:id)
+                 #:fail-unless (free-identifier=? #'ref name-stx)
+                 (format "expected a reference to ~s" (syntax-e name-stx))
+                 #'ref]))
+            #`(raise-undefined-error
+                (quote #,ref-stx)
+                #:source (quote-srcloc #,stx)
+                #:original-name (quote #,name-stx)
+                #:original-source (quote-srcloc #,source-stx))))))))
+
+(define (raise-undefined-error name
+          #:source [source #false]
+          #:original-name [original-name #false]
+          #:original-source [original-source #false])
+  (raise
+    (exn:fail
+      (format "~acannot execute undefined name: ~s~a~a"
+        (source-location->prefix source)
+        name
+        (if (and original-name
+              (not (eq? original-name name)))
+          (format "\n originally defined by name: ~a"
+            original-name)
+          "")
+        (if original-source
+          (format "\n originally defined at: ~a"
+            (source-location->string original-source))
+          ""))
+      (current-continuation-marks))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;;  Definition Reordering
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define-syntax (at-end stx)
   (syntax-case stx ()
