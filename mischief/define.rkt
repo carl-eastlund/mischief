@@ -9,7 +9,8 @@
   define-syntaxes-if-unbound
   define-provide-pre-syntax
   define-unimplemented
-  unimplemented-out)
+  unimplemented-out
+  unimplemented)
 
 (require
   (for-syntax
@@ -103,6 +104,8 @@
             (source-location->string original-source))
           ""))
       (current-continuation-marks))))
+
+(define-unimplemented unimplemented)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
