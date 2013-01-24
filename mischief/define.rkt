@@ -86,16 +86,19 @@
           #:original-source [original-source #false])
   (raise
     (exn:fail
-      (format "~acannot execute undefined name: ~s~a~a"
-        (source-location->prefix source)
+      (format "cannot execute undefined name: ~s~a~a~a"
         name
+        (if source
+          (format "\n  reference occurs at: ~a"
+            (source-location->string source))
+          "")
         (if (and original-name
               (not (eq? original-name name)))
-          (format "\n originally defined by name: ~a"
+          (format "\n  originally defined by name: ~a"
             original-name)
           "")
         (if original-source
-          (format "\n originally defined at: ~a"
+          (format "\n  originally defined at: ~a"
             (source-location->string original-source))
           ""))
       (current-continuation-marks))))
