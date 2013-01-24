@@ -8,8 +8,8 @@
   define-syntax-if-unbound
   define-syntaxes-if-unbound
   define-provide-pre-syntax
-  undefined
-  undefined-out)
+  define-unimplemented
+  unimplemented-out)
 
 (require
   (for-syntax
@@ -44,24 +44,24 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define-syntax (undefined stx)
+(define-syntax (define-unimplemented stx)
   (syntax-parse stx
     [(_ name:id ...)
      #`(define-syntaxes {name ...}
-         (undefined-transformers #:source (quote-syntax #,stx)
+         (unimplemented-transformers #:source (quote-syntax #,stx)
            (quote-syntax name) ...))]))
 
-(define-provide-pre-syntax (undefined-out stx modes)
+(define-provide-pre-syntax (unimplemented-out stx modes)
   (syntax-parse stx
     [(_ name:id ...)
      (define/syntax-parse [temp ...]
        (generate-temporaries (attribute name)))
      (syntax-local-lift-module-end-declaration
-       (syntax/loc stx (undefined temp ...)))
+       (syntax/loc stx (define-unimplemented temp ...)))
      #'(rename-out [temp name] ...)]))
 
 (begin-for-syntax
-  (define (undefined-transformers #:source [source #false] . name-stxs)
+  (define (unimplemented-transformers #:source [source #false] . name-stxs)
     (apply values
       (for/list {[name-stx (in-list name-stxs)]}
         (define source-stx
@@ -74,19 +74,20 @@
                  #:fail-unless (free-identifier=? #'ref name-stx)
                  (format "expected a reference to ~s" (syntax-e name-stx))
                  #'ref]))
-            #`(raise-undefined-error
+            #`(raise-unimplemented-error
                 (quote #,ref-stx)
                 #:source (quote-srcloc #,stx)
                 #:original-name (quote #,name-stx)
                 #:original-source (quote-srcloc #,source-stx))))))))
 
-(define (raise-undefined-error name
+(define (raise-unimplemented-error name
           #:source [source #false]
           #:original-name [original-name #false]
           #:original-source [original-source #false])
   (raise
     (exn:fail
-      (format "cannot execute undefined name: ~s~a~a~a"
+      (format "~a: ~s~a~a~a"
+        "cannot execute an unimplemented name"
         name
         (if source
           (format "\n  reference occurs at: ~a"
