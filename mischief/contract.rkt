@@ -49,7 +49,7 @@
    (format "Offending Value:\n~a\n"
      (pretty-format value))))
 
-(current-blame-format show-blame-error)
+#;(current-blame-format show-blame-error)
 
 ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Implementation
