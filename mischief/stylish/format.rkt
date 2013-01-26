@@ -28,8 +28,7 @@
     (cond!
       [(= i n)
        (unless (empty? args)
-         (error name "unused arguments at ~a in ~a" i (reconstruct)))
-       #false]
+         (error name "unused arguments at ~a in ~a" i (reconstruct)))]
       [(< i n)
        (match (string-ref fmt i)
          [#\~ (escape-from-index (add1 i) args)]
