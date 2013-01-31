@@ -30,6 +30,8 @@
     mischief/function
     mischief/boolean
     mischief/maybe
+    mischief/symbol
+    mischief/keyword
     mischief/quotation
     mischief/phrase
     mischief/stylish
