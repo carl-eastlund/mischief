@@ -10,6 +10,7 @@
 
   expr-style?
   empty-expr-style
+  simple-expr-style
   extend-expr-style
   set-expr-style-default-convert
 
@@ -22,7 +23,8 @@
 (require
   racket/list
   racket/promise
-  mischief/struct)
+  mischief/struct
+  mzlib/pconvert)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Data Definitions
@@ -46,6 +48,9 @@
 
 (define empty-expr-style
   (expr-style #false empty))
+
+(define simple-expr-style
+  (expr-style print-convert empty))
 
 (define (extend-expr-style st after? new-exts)
   (update expr-style st

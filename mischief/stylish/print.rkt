@@ -13,6 +13,7 @@
 
   print-style?
   empty-print-style
+  simple-print-style
   extend-print-style
   set-print-style-default-printer
 
@@ -92,6 +93,9 @@
 
 (define empty-print-style
   (print-style #false empty))
+
+(define simple-print-style
+  (print-style write empty))
 
 (define (extend-print-style st after? new-exts)
   (update print-style st

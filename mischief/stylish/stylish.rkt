@@ -115,6 +115,7 @@
 
     [print-style? predicate/c]
     [empty-print-style print-style?]
+    [simple-print-style print-style?]
     [current-print-style (parameter/c print-style?)]
     [set-print-style-default-printer
      (->
@@ -130,6 +131,7 @@
 
     [expr-style? predicate/c]
     [empty-expr-style expr-style?]
+    [simple-expr-style expr-style?]
     [current-expr-style (parameter/c expr-style?)]
     [set-expr-style-default-convert
      (->
@@ -313,8 +315,8 @@
 (define (stylish-value->expr v [est (current-expr-style)])
   (value->expression 'stylish-value->expr v est))
 
-(define current-print-style (make-parameter empty-print-style))
-(define current-expr-style (make-parameter empty-expr-style))
+(define current-print-style (make-parameter simple-print-style))
+(define current-expr-style (make-parameter simple-expr-style))
 (define current-stylish-print-columns (make-parameter 80))
 
 (define (stylish-extend-print-style pst
