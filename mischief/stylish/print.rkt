@@ -1,27 +1,7 @@
-#lang racket/base
+#lang racket/unit
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Exports
-
-(provide
-
-  print-to-stylish-port
-  print-expression
-  print-separator
-
-  stylish-port?
-
-  print-style?
-  empty-print-style
-  simple-print-style
-  extend-print-style
-  set-print-style-default-printer
-
-  print-style-extension?
-  print-style-extension)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Imports
+;; Module Imports
 
 (require
   racket/list
@@ -30,7 +10,18 @@
   racket/block
   data/queue
   mischief/struct
-  mischief/boolean)
+  mischief/boolean
+  mischief/stylish/signatures)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Unit Imports
+
+(import)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Unit Exports
+
+(export print^)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Data Definitions
@@ -97,8 +88,10 @@
 (define simple-print-style
   (print-style write empty))
 
-(define (extend-print-style st after? new-exts)
-  (update print-style st
+(define (extend-print-style pst
+          #:after? [after? #false]
+          . new-exts)
+  (update print-style pst
     [extensions (if after?
                   (append extensions new-exts)
                   (append new-exts extensions))]))

@@ -1,30 +1,25 @@
-#lang racket/base
+#lang racket/unit
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Exports
-
-(provide
-
-  value->expression
-  value-quotable?
-
-  expr-style?
-  empty-expr-style
-  simple-expr-style
-  extend-expr-style
-  set-expr-style-default-convert
-
-  expr-style-extension?
-  expr-style-extension)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Imports
+;; Module Imports
 
 (require
+  racket/function
   racket/list
   racket/promise
   mischief/struct
-  mzlib/pconvert)
+  mzlib/pconvert
+  mischief/stylish/signatures)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Unit Imports
+
+(import)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Unit Exports
+
+(export expression^)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Data Definitions
@@ -52,8 +47,10 @@
 (define simple-expr-style
   (expr-style print-convert empty))
 
-(define (extend-expr-style st after? new-exts)
-  (update expr-style st
+(define (extend-expr-style est
+          #:after? [after? #false]
+          . new-exts)
+  (update expr-style est
     [extensions (if after?
                   (append extensions new-exts)
                   (append new-exts extensions))]))
@@ -65,7 +62,11 @@
 (define (expr-style-extension? x)
   (expr-type? x))
 
-(define (expr-style-extension type? convert quotable? prefer-quote?)
+(define (expr-style-extension
+          type?
+          convert
+          [quotable? (const #false)]
+          [prefer-quote? #true])
   (expr-type type? convert quotable? prefer-quote?))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

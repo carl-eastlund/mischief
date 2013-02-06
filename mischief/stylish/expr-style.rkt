@@ -1,13 +1,7 @@
-#lang racket/base
+#lang racket/unit
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Exports
-
-(provide
-  default-expr-style)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Imports
+;; Module Imports
 
 (require
   racket/set
@@ -17,41 +11,22 @@
   mischief/boolean
   mischief/define
   mischief/struct
-  mischief/stylish/stylish)
+  mischief/stylish/signatures)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Public Definitions
+;; Unit Imports
 
-(at-end
-  (define default-expr-style
-    (extend-expr-style
-      (set-expr-style-default-convert
-        empty-expr-style
-        (lambda (x) `(quote ,x)))
-      boolean-expr-style-extension
-      number-expr-style-extension
-      string-expr-style-extension
-      bytes-expr-style-extension
-      char-expr-style-extension
-      symbol-expr-style-extension
-      regexp-expr-style-extension
-      keyword-expr-style-extension
-      null-expr-style-extension
-      list-expr-style-extension
-      list*-expr-style-extension
-      pair-expr-style-extension
-      mpair-expr-style-extension
-      vector-expr-style-extension
-      box-expr-style-extension
-      hash-expr-style-extension
-      set-expr-style-extension
-      void-expr-style-extension
-      prefab-expr-style-extension
-      struct-expr-style-extension
-      promise-expr-style-extension
-      syntax-expr-style-extension
-      path-expr-style-extension
-      dict-expr-style-extension)))
+(import expression^ stylish^)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Unit Exports
+
+(export expr-style^)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Initialization Dependencies
+
+(init-depend expression^ stylish^)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Private Definitions
@@ -557,3 +532,38 @@
     convert-dict
     dict-quotable?
     prefer-quote-dict?))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Public Definitions
+
+(define default-expr-style
+  (extend-expr-style
+    (set-expr-style-default-convert
+      empty-expr-style
+      (lambda (x) `(quote ,x)))
+    boolean-expr-style-extension
+    number-expr-style-extension
+    string-expr-style-extension
+    bytes-expr-style-extension
+    char-expr-style-extension
+    symbol-expr-style-extension
+    regexp-expr-style-extension
+    keyword-expr-style-extension
+    null-expr-style-extension
+    list-expr-style-extension
+    list*-expr-style-extension
+    pair-expr-style-extension
+    mpair-expr-style-extension
+    vector-expr-style-extension
+    box-expr-style-extension
+    hash-expr-style-extension
+    set-expr-style-extension
+    void-expr-style-extension
+    prefab-expr-style-extension
+    struct-expr-style-extension
+    promise-expr-style-extension
+    syntax-expr-style-extension
+    path-expr-style-extension
+    dict-expr-style-extension))
+
+(define current-expr-style (make-parameter default-expr-style))

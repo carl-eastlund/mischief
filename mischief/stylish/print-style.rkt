@@ -1,45 +1,28 @@
-#lang racket/base
+#lang racket/unit
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Exports
-
-(provide
-  default-print-style)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Imports
+;; Module Imports
 
 (require
   racket/list
   mischief/define
   mischief/struct
-  mischief/stylish/stylish)
+  mischief/stylish/signatures)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Public Definition
+;; Unit Imports
 
-(at-end
-  (define default-print-style
-    (extend-print-style
-      (set-print-style-default-printer
-        empty-print-style
-        write)
-      (print-style-extension boolean? print-atom)
-      (print-style-extension number? print-atom)
-      (print-style-extension string? print-atom)
-      (print-style-extension bytes? print-atom)
-      (print-style-extension char? print-atom)
-      (print-style-extension symbol? print-atom)
-      (print-style-extension regexp? print-atom)
-      (print-style-extension keyword? print-atom)
-      (print-style-extension null? print-atom)
-      (print-style-extension pair? print-list*)
-      (print-style-extension vector? print-vector)
-      (print-style-extension box? print-box)
-      (print-style-extension hash? print-hash)
-      (print-style-extension prefab? print-prefab)
-      (print-style-extension stylish-comment-expr? print-comment)
-      (print-style-extension stylish-unprintable-expr? print-unprintable))))
+(import print^ stylish^)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Unit Exports
+
+(export print-style^)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Initialization Dependencies
+
+(init-depend print^ stylish^)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Private Definitions
@@ -206,3 +189,30 @@
   (write-string "#<" port)
   (display (stylish-unprintable-expr-name x) port)
   (write-string ">" port))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Public Definitions
+
+(define default-print-style
+  (extend-print-style
+    (set-print-style-default-printer
+      empty-print-style
+      write)
+    (print-style-extension boolean? print-atom)
+    (print-style-extension number? print-atom)
+    (print-style-extension string? print-atom)
+    (print-style-extension bytes? print-atom)
+    (print-style-extension char? print-atom)
+    (print-style-extension symbol? print-atom)
+    (print-style-extension regexp? print-atom)
+    (print-style-extension keyword? print-atom)
+    (print-style-extension null? print-atom)
+    (print-style-extension pair? print-list*)
+    (print-style-extension vector? print-vector)
+    (print-style-extension box? print-box)
+    (print-style-extension hash? print-hash)
+    (print-style-extension prefab? print-prefab)
+    (print-style-extension stylish-comment-expr? print-comment)
+    (print-style-extension stylish-unprintable-expr? print-unprintable)))
+
+(define current-print-style (make-parameter default-print-style))
