@@ -60,7 +60,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Convert String
 
-(define (convert-string s st) (if (immutable? s) s `(string-copy ,s)))
+(define (convert-string s st)
+  (if (immutable? s) s (stylish-comment-expr "mutable" s)))
 (define (quotable-string? s st) (immutable? s))
 (define prefer-quote-string? #false)
 
@@ -73,7 +74,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Convert Byte String
 
-(define (convert-bytes b st) (if (immutable? b) b `(bytes-copy ,b)))
+(define (convert-bytes b st)
+  (if (immutable? b) b (stylish-comment-expr "mutable" b)))
 (define (quotable-bytes? b st) (immutable? b))
 (define prefer-quote-bytes? #false)
 
@@ -100,17 +102,17 @@
 ;; Convert Symbol
 
 (define (convert-symbol s st)
-  (list (symbol-constructor-name s)
-    (symbol->string s)))
+  (cond
+    [(symbol-interned? s) `(quote ,s)]
+    [(symbol-unreadable? s)
+     (stylish-comment-expr "unreadable"
+       `(quote ,s))]
+    [else
+     (stylish-comment-expr "uninterned"
+       `(quote ,s))]))
 
 (define (quotable-symbol? s st) (symbol-interned? s))
 (define prefer-quote-symbol? #true)
-
-(define (symbol-constructor-name s)
-  (cond!
-    [(symbol-interned? s) 'string->symbol]
-    [(symbol-unreadable? s) 'string->unreadable-symbol]
-    [else 'string->uninterned-symbol]))
 
 (define symbol-expr-style-extension
   (expr-style-extension symbol?
