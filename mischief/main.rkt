@@ -1,24 +1,39 @@
 #lang racket/base
 (require mischief/require)
-(require/provide
-  (only-meta-in 0
-    racket
-    racket/block
-    racket/pretty
-    racket/syntax
-    racket/splicing
-    racket/generator
-    racket/runtime-path
-    racket/date
-    data/queue
-    syntax/parse
-    syntax/parse/define
-    syntax/parse/experimental/specialize
-    syntax/id-table
-    syntax/kerncase
-    syntax/srcloc
-    syntax/location
-    syntax/strip-context
+
+(module+ test
+  (require rackunit/docs-complete))
+
+(define-syntax-rule (require/provide-phase-0 spec ...)
+  (require/provide
+    (only-meta-in 0
+      spec ...)))
+
+(define-syntax-rule (require/provide/check-docs-phase-0 mod-path ...)
+  (begin
+    (require/provide-phase-0 mod-path ...)
+    (module+ test (check-docs (quote mod-path)) ...)))
+
+(require/provide-phase-0
+  racket
+  racket/block
+  racket/pretty
+  racket/syntax
+  racket/splicing
+  racket/generator
+  racket/runtime-path
+  racket/date
+  data/queue
+  syntax/parse
+  syntax/parse/define
+  syntax/parse/experimental/specialize
+  syntax/id-table
+  syntax/kerncase
+  syntax/srcloc
+  syntax/location
+  syntax/strip-context)
+
+(require/provide/check-docs-phase-0
     mischief/define
     mischief/values
     mischief/error
@@ -51,6 +66,8 @@
     mischief/location
     mischief/fold
     mischief/id-table)
+
+(require/provide
   (for-syntax
     (only-meta-in 0
       racket)))
