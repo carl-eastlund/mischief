@@ -84,6 +84,28 @@
              (syntax-parser [(_ . :args/for) #'define-body])
              (syntax-parser [(_ . :args/for*) #'define-body]))))]))
 
+(define-syntax (define-derived-loops stx)
+  (syntax-parse stx
+    [(_ (derived-suffix:id . pat) (original-suffix:id . tem))
+     (define/syntax-parse
+         {for/derived for*/derived define/for/derived define/for*/derived}
+       (for/list {[prefix (in-list '(for for* define/for define/for*))]}
+         (format-id #'derived-suffix "~a/~a" prefix #'derived-suffix)))
+     (define/syntax-parse
+         {for/original for*/original define/for/original define/for*/original}
+       (for/list {[prefix (in-list '(for for* define/for define/for*))]}
+         (format-id #'original-suffix "~a/~a" prefix #'original-suffix)))
+     #'(define-syntaxes
+           {for/derived for*/derived define/for/derived define/for*/derived}
+         (block
+           (define-syntax-class args #:attributes {body}
+             (pattern pat #:attr body #'tem))
+           (values
+             (syntax-parser [(_ . :args) #'(for/original . body)])
+             (syntax-parser [(_ . :args) #'(for*/original . body)])
+             (syntax-parser [(_ . :args) #'(define/for/original . body)])
+             (syntax-parser [(_ . :args) #'(define/for*/original . body)]))))]))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Filter Lists
 
@@ -95,32 +117,25 @@
   (for*/filter clauses:fold-clauses . body:block-body)
   (for*/filter-lists {xs} clauses . body))
 
-(define-loops
-  (filter-lists loop/fold {(~and xs:id x:temp-id rxs:temp-id) ...}
-    clauses:fold-clauses . body:block-body)
-  {xs ...}
-  (block
-    (define-values {rxs.temp ...}
-      (loop/fold {[rxs.temp '()] ...} clauses
-        (define-values {x.temp ...} (block . body))
-        (values (if x.temp (cons x.temp rxs.temp) rxs.temp) ...)))
-    (values (reverse rxs.temp) ...)))
+(define-derived-loops
+  (filter-lists {xs:id ...} clauses:fold-clauses . body:block-body)
+  (fold/filter-lists {} {xs ...} clauses . body))
 
 (define-loops
   (fold/filter-lists loop/fold
-      {[(~and x:id x*:temp-id) (~and e:expr e*:temp-id)] ...}
-      {(~and ys:id y:temp-id rys:temp-id) ...}
+      {[(~and x:id x*:temp-id x**:temp-id) (~and e:expr e*:temp-id)] ...}
+      {(~and ys:id ys*:temp-id y:temp-id rys:temp-id) ...}
     clauses:fold-clauses . body:block-body)
   {x ... ys ...}
   (let {[e* e] ...}
     (block
-      (define-values {x ... rys.temp ...}
+      (define-values {x**.temp ... rys.temp ...}
         (loop/fold {[x e*] ... [rys.temp '()] ...} clauses
           (define-values {x*.temp ... y.temp ...} (block . body))
           (values x*.temp ... (if y.temp (cons y.temp rys.temp) rys.temp) ...)))
-      (define-values {ys ...}
+      (define-values {ys*.temp ...}
         (values (reverse rys.temp) ...))
-      (values x ... ys ...))))
+      (values x**.temp ... ys*.temp ...))))
 
 (module+ test
   (check-same
@@ -138,19 +153,27 @@
         (and x y (+ x y))))
     '(6 8 9 7 9 10 9 11 12))
   (check-same
-    (let {[x '(1 2 #f 4)]
+    (let {[n 0]
+          [x '(1 2 #f 4)]
           [y '(5 #f 7 8)]}
-      (for/filter-lists {x y} {[x (in-list x)] [y (in-list y)]}
-        (values (and x (add1 x)) (and y (sub1 y)))))
-    (values '(2 3 5) '(4 6 7)))
+      (for/fold/filter-lists
+          {[n n]}
+          {lst}
+          {[x (in-list x)]
+           [y (in-list y)]}
+        (values (add1 n) (and x y (+ x y)))))
+    (values 4 '(6 12)))
   (check-same
-    (let {[x '(1 2 #f 4)]
+    (let {[n 0]
+          [x '(1 2 #f 4)]
           [y '(5 #f 7 8)]}
-      (for*/filter-lists {x y} {[x (in-list x)] [y (in-list y)]}
-        (values (and x (add1 x)) (and y (sub1 y)))))
-    (values
-      '(2 2 2 2 3 3 3 3 5 5 5 5)
-      '(4 6 7 4 6 7 4 6 7 4 6 7))))
+      (for*/fold/filter-lists
+          {[n n]}
+          {lst}
+          {[x (in-list x)]
+           [y (in-list y)]}
+        (values (add1 n) (and x y (+ x y)))))
+    (values 16 '(6 8 9 7 9 10 9 11 12))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Append Lists
@@ -163,38 +186,27 @@
   (for*/append clauses:fold-clauses . body:block-body)
   (for*/append-lists {xs} clauses . body))
 
-(define-loops
-  (append-lists loop/fold {(~and xs:id xs0:temp-id rxss:temp-id) ...}
-    clauses:fold-clauses . body:block-body)
-  {xs ...}
-  (block
-    (define-values {rxss.temp ...}
-      (loop/fold {[rxss.temp '()] ...} clauses
-        (define-values {xs0.temp ...} (block . body))
-        (values (cons xs0.temp rxss.temp) ...)))
-    (values
-      (for/fold {[xs '()]} {[xs0.temp (in-list rxss.temp)]}
-        (append xs0.temp xs))
-      ...)))
+(define-derived-loops
+  (append-lists {xs:id ...} clauses:fold-clauses . body:block-body)
+  (fold/append-lists {} {xs ...} clauses . body))
 
 (define-loops
   (fold/append-lists loop/fold
-      {[(~and x:id x*:temp-id) (~and e:expr e*:temp-id)] ...}
-      {(~and ys:id ys0:temp-id ryss:temp-id) ...}
+      {[(~and x:id x*:temp-id x**:temp-id) (~and e:expr e*:temp-id)] ...}
+      {(~and ys:id ys*:temp-id ys**:temp-id ys0:temp-id ryss:temp-id) ...}
     clauses:fold-clauses . body:block-body)
   {x ... ys ...}
   (let {[e* e] ...}
-    (block
-      (define-values {x ... ryss.temp ...}
-        (loop/fold {[x e*] ... [ryss.temp '()] ...} clauses
-          (define-values {x*.temp ... ys0.temp ...} (block . body))
-          (values x*.temp ... (cons ys0.temp ryss.temp) ...)))
-      (define-values {ys ...}
-        (values
-          (for/fold {[ys '()]} {[ys0.temp (in-list ryss.temp)]}
-            (append ys0.temp ys))
-          ...))
-      (values x ... ys ...))))
+    (define-values {x**.temp ... ryss.temp ...}
+      (loop/fold {[x e*] ... [ryss.temp '()] ...} clauses
+        (define-values {x*.temp ... ys0.temp ...} (block . body))
+        (values x*.temp ... (cons ys0.temp ryss.temp) ...)))
+    (define-values {ys*.temp ...}
+      (values
+        (for/fold {[ys**.temp '()]} {[ys0.temp (in-list ryss.temp)]}
+          (append ys0.temp ys**.temp))
+        ...))
+    (values x**.temp ... ys*.temp ...)))
 
 (module+ test
   (check-same
@@ -210,7 +222,27 @@
       (for*/append {[x (in-list x)]
                    [y (in-list y)]}
         (make-list x y)))
-    '(a b c a a b b c c a a a b b b c c c)))
+    '(a b c a a b b c c a a a b b b c c c))
+  (check-same
+    (let {[n 0] [x '(1 2 3)] [y '(a b c)]}
+      (for/fold/append-lists
+          {[n n]}
+          {lst}
+          {[x (in-list x)] [y (in-list y)]}
+        (values
+          (+ x n)
+          (make-list x y))))
+    (values 6 '(a b b c c c)))
+  (check-same
+    (let {[n 0] [x '(1 2 3)] [y '(a b c)]}
+      (for*/fold/append-lists
+          {[n n]}
+          {lst}
+          {[x (in-list x)] [y (in-list y)]}
+        (values
+          (+ x n)
+          (make-list x y))))
+    (values 18 '(a b c a a b b c c a a a b b b c c c))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Partition Lists
@@ -282,32 +314,41 @@
   (define/for*/lists {xs:id ...} clauses:fold-clauses . body:block-body)
   (define/for*/list-values {xs ...} clauses . body))
 
-(define-loops
-  (list-values loop/fold {(~and xs:id x:temp-id rxs:temp-id) ...}
-    clauses:fold-clauses . body:block-body)
-  {xs ...}
-  (block
-    (define-values {rxs.temp ...}
-      (loop/fold {[rxs.temp '()] ...} clauses
-        (define-values {x.temp ...} (block . body))
-        (values (cons x.temp rxs.temp) ...)))
-    (values (reverse rxs.temp) ...)))
+(define-derived-loops
+  (list-values {xs:id ...} clauses:fold-clauses . body:block-body)
+  (fold/lists {} {xs ...} clauses . body))
 
 (define-loops
   (fold/lists loop/fold
-      {[(~and x:id x*:temp-id) (~and e:expr e*:temp-id)] ...}
-      {(~and ys:id y:temp-id rys:temp-id) ...}
+      {[(~and x:id x*:temp-id x**:temp-id) (~and e:expr e*:temp-id)] ...}
+      {(~and ys:id ys*:temp-id y:temp-id rys:temp-id) ...}
     clauses:fold-clauses . body:block-body)
   {x ... ys ...}
   (let {[e* e] ...}
     (block
-      (define-values {x ... rys.temp ...}
+      (define-values {x**.temp ... rys.temp ...}
         (loop/fold {[x e*] ... [rys.temp '()] ...} clauses
           (define-values {x*.temp ... y.temp ...} (block . body))
           (values x*.temp ... (cons y.temp rys.temp) ...)))
-      (define-values {ys ...}
+      (define-values {ys*.temp ...}
         (values (reverse rys.temp) ...))
-      (values x ... ys ...))))
+      (values x**.temp ... ys*.temp ...))))
+
+(module+ test
+  (check-same
+    (let {[n 0]
+          [x '(1 2 3)]
+          [y '(a b c)]}
+      (for/fold/lists {[n n]} {lst} {[x (in-list x)] [y (in-list y)]}
+        (values (add1 n) (make-list x y))))
+    (values 3 '([a] [b b] [c c c])))
+  (check-same
+    (let {[n 0]
+          [x '(1 2 3)]
+          [y '(a b c)]}
+      (for*/fold/lists {[n n]} {lst} {[x (in-list x)] [y (in-list y)]}
+        (values (add1 n) (make-list x y))))
+    (values 9 '([a] [b] [c] [a a] [b b] [c c] [a a a] [b b b] [c c c]))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Values
@@ -325,3 +366,38 @@
     clauses:fold-clauses . body:block-body)
   {x ...}
   (loop/fold {[x e] ...} clauses . body))
+
+(module+ test
+  (check-same
+    (let {[n 0]
+          [x '(1 2 3)]
+          [y '(10 100 1000)]}
+      (for/fold-values {[n n]} {[x (in-list x)] [y (in-list y)]}
+        (+ n (* x y))))
+    3210)
+  (check-same
+    (let {[n 0]
+          [x '(1 2 3)]
+          [y '(10 100 1000)]}
+      (for*/fold-values {[n n]} {[x (in-list x)] [y (in-list y)]}
+        (+ n (* x y))))
+    6660))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Primitive folds
+
+(module+ test
+  (check-same
+    (let {[n 0]
+          [x '(1 2 3)]
+          [y '(10 100 1000)]}
+      (for/fold {[n n]} {[x (in-list x)] [y (in-list y)]}
+        (+ n (* x y))))
+    3210)
+  (check-same
+    (let {[n 0]
+          [x '(1 2 3)]
+          [y '(10 100 1000)]}
+      (for*/fold {[n n]} {[x (in-list x)] [y (in-list y)]}
+        (+ n (* x y))))
+    6660))
