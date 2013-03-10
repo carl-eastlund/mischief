@@ -127,10 +127,10 @@
       {(~and ys:id ys*:temp-id y:temp-id rys:temp-id) ...}
     clauses:fold-clauses . body:block-body)
   {x ... ys ...}
-  (let {[e* e] ...}
+  (let {[e*.temp e] ...}
     (block
       (define-values {x**.temp ... rys.temp ...}
-        (loop/fold {[x e*] ... [rys.temp '()] ...} clauses
+        (loop/fold {[x e*.temp] ... [rys.temp '()] ...} clauses
           (define-values {x*.temp ... y.temp ...} (block . body))
           (values x*.temp ... (if y.temp (cons y.temp rys.temp) rys.temp) ...)))
       (define-values {ys*.temp ...}
@@ -196,9 +196,9 @@
       {(~and ys:id ys*:temp-id ys**:temp-id ys0:temp-id ryss:temp-id) ...}
     clauses:fold-clauses . body:block-body)
   {x ... ys ...}
-  (let {[e* e] ...}
+  (let {[e*.temp e] ...}
     (define-values {x**.temp ... ryss.temp ...}
-      (loop/fold {[x e*] ... [ryss.temp '()] ...} clauses
+      (loop/fold {[x e*.temp] ... [ryss.temp '()] ...} clauses
         (define-values {x*.temp ... ys0.temp ...} (block . body))
         (values x*.temp ... (cons ys0.temp ryss.temp) ...)))
     (define-values {ys*.temp ...}
@@ -324,10 +324,10 @@
       {(~and ys:id ys*:temp-id y:temp-id rys:temp-id) ...}
     clauses:fold-clauses . body:block-body)
   {x ... ys ...}
-  (let {[e* e] ...}
+  (let {[e*.temp e] ...}
     (block
       (define-values {x**.temp ... rys.temp ...}
-        (loop/fold {[x e*] ... [rys.temp '()] ...} clauses
+        (loop/fold {[x e*.temp] ... [rys.temp '()] ...} clauses
           (define-values {x*.temp ... y.temp ...} (block . body))
           (values x*.temp ... (cons y.temp rys.temp) ...)))
       (define-values {ys*.temp ...}
