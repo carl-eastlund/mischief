@@ -6,12 +6,23 @@
   dict-add
   dict-subtract
   dict-set-all
-  dict-remove-all)
+  dict-remove-all
+  dict->procedure)
 
 (require
   racket/dict
   racket/match
   racket/function)
+
+(define (dict->procedure dict
+          #:failure [default
+                     (lambda {key}
+                       (dict-key-not-found-error
+                         'dict->procedure dict key))])
+  (lambda {key}
+    (dict-ref dict key
+      (lambda {}
+        (invoke default key)))))
 
 (define (dict-ref? dict key
           #:success [success identity]

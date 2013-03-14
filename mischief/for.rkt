@@ -1,6 +1,11 @@
 #lang racket/base
 
 (provide
+  for/dict for*/dict
+  for/dict! for*/dict!
+  for/hash! for*/hash!
+  for/hasheq! for*/hasheq!
+  for/hasheqv! for*/hasheqv!
   for/filter for*/filter
   for/filter-lists for*/filter-lists
   for/append for*/append
@@ -29,6 +34,7 @@
     syntax/parse/experimental/specialize
     mischief/parse)
   racket/list
+  racket/dict
   racket/block
   mischief/shorthand)
 
@@ -105,6 +111,61 @@
              (syntax-parser [(_ . :args) #'(for*/original . body)])
              (syntax-parser [(_ . :args) #'(define/for/original . body)])
              (syntax-parser [(_ . :args) #'(define/for*/original . body)]))))]))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Immutable Dictionaries
+
+(define-shorthand
+  (for/dict d0:expr clauses:fold-clauses . body:block-body)
+  (for/fold {[d d0]} clauses
+    (define-values {k v} (block . body))
+    (dict-set d k v)))
+
+(define-shorthand
+  (for*/dict d0:expr clauses:fold-clauses . body:block-body)
+  (for*/fold {[d d0]} clauses
+    (define-values {k v} (block . body))
+    (dict-set d k v)))
+
+(define-shorthand
+  (for/dict! d0:expr clauses:fold-clauses . body:block-body)
+  (let {[d d0]}
+    (for clauses
+      (define-values {k v} (block . body))
+      (dict-set! d k v))
+    d))
+
+(define-shorthand
+  (for*/dict! d0:expr clauses:fold-clauses . body:block-body)
+  (let {[d d0]}
+    (for* clauses
+      (define-values {k v} (block . body))
+      (dict-set! d k v))
+    d))
+
+(define-shorthand
+  (for/hash! clauses:fold-clauses . body:block-body)
+  (for/dict! (make-hash) clauses . body))
+
+(define-shorthand
+  (for*/hash! clauses:fold-clauses . body:block-body)
+  (for*/dict! (make-hash) clauses . body))
+
+(define-shorthand
+  (for/hasheq! clauses:fold-clauses . body:block-body)
+  (for/dict! (make-hasheq) clauses . body))
+
+(define-shorthand
+  (for*/hasheq! clauses:fold-clauses . body:block-body)
+  (for*/dict! (make-hasheq) clauses . body))
+
+(define-shorthand
+  (for/hasheqv! clauses:fold-clauses . body:block-body)
+  (for/dict! (make-hasheqv) clauses . body))
+
+(define-shorthand
+  (for*/hasheqv! clauses:fold-clauses . body:block-body)
+  (for*/dict! (make-hasheqv) clauses . body))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Filter Lists
