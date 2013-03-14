@@ -93,7 +93,7 @@
 
   (queue->list output))
 
-(define (kernel-syntax-bindings stxs #:among [among #false])
+(define (kernel-syntax-bindings stx #:among [among #false])
 
   (define seen (make-free-id-table))
 
@@ -120,11 +120,11 @@
       [(define-syntaxes ~! {x:id ...} . _) (for-each record! (attribute x))]
       [_ (void)]))
 
-  (for-each visit stxs)
+  (visit stx)
 
   (queue->list output))
 
-(define (kernel-syntax-references stxs #:among [among #false])
+(define (kernel-syntax-references stx #:among [among #false])
 
   (define seen (make-free-id-table))
 
@@ -222,6 +222,6 @@
 
       [_ (void)]))
 
-  (for-each visit stxs)
+  (visit stx)
 
   (queue->list output))
