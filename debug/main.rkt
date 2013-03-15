@@ -2,6 +2,7 @@
 
 (provide
   define/debug
+  define-values/debug
   lambda/debug
   case-lambda/debug
   #%app/debug
@@ -100,6 +101,15 @@
      (define/syntax-parse [fmt arg ...]
        (syntax->format/args "definition: " (attribute name)))
      #'(define name
+         (!dbg call-and-debug fmt arg ...
+           #:thunk (lambda () (#%expression body))))]))
+
+(define-syntax (define-values/debug stx)
+  (syntax-parse stx
+    [(_ {name:id ...} body:expr)
+     (define/syntax-parse [fmt arg ...]
+       (syntax->format/args "definition: " (attribute name)))
+     #'(define-values {name ...}
          (!dbg call-and-debug fmt arg ...
            #:thunk (lambda () (#%expression body))))]))
 

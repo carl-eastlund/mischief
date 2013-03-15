@@ -2,9 +2,9 @@
 
 (require
   ;; Base language:
-  mischief
+  racket/base
   (for-template
-    (only-in racket
+    (only-in racket/base
       define-syntax
       define-syntaxes))
   ;; Debugging versions:
@@ -15,7 +15,7 @@
 
 (provide
   (debug-out
-    (all-from-out mischief)
+    (all-from-out racket/base)
     (for-template
       define-syntax
       define-syntaxes)))

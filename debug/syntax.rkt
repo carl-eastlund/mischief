@@ -1,7 +1,8 @@
 #lang mischief
 
 (provide
-  define-syntax/debug)
+  define-syntax/debug
+  define-syntaxes/debug)
 
 (require
   (for-syntax
@@ -25,6 +26,15 @@
      (define/syntax-parse [fmt arg ...]
        (syntax->format/args  (attribute name)))
      #'(define-syntax name
+         (!dbg call-and-debug fmt arg ...
+           #:thunk (lambda () (#%expression body))))]))
+
+(define-syntax (define-syntaxes/debug stx)
+  (syntax-parse stx
+    [(_ {name:id ...} body:expr)
+     (define/syntax-parse [fmt arg ...]
+       (syntax->format/args  (attribute name)))
+     #'(define-syntaxes {name ...}
          (!dbg call-and-debug fmt arg ...
            #:thunk (lambda () (#%expression body))))]))
 
