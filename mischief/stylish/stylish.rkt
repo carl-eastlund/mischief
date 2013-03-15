@@ -30,6 +30,10 @@
 (struct stylish-comment-expr [comment expr] #:transparent)
 (struct stylish-unprintable-expr [name] #:transparent)
 
+(define (stylish-print-handler v)
+  (unless (void? v)
+    (stylish-println v)))
+
 (define (stylish-printf
           #:port [port (current-output-port)]
           #:expr-style [est (current-expr-style)]

@@ -45,6 +45,9 @@
 
   (contract-out
 
+    [stylish-print-handler
+     (-> any/c void?)]
+
     [stylish-format
      (->*
          {string?}

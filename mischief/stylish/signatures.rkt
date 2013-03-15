@@ -65,6 +65,8 @@
    (struct stylish-comment-expr {comment expr})
    (struct stylish-unprintable-expr {name})
 
+   stylish-print-handler
+
    stylish-format
    stylish-printf
 
