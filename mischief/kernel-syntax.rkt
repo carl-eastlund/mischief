@@ -56,7 +56,7 @@
   (define output (make-queue))
 
   (define (visit stx [stack empty])
-    (match (dict-ref syntax~>status stx)
+    (match (dict-ref syntax~>status stx 'todo)
       ['done (void)]
       ['pending (report-cycle! stx stack)]
       ['todo
@@ -100,9 +100,14 @@
   (define (unseen? id)
     (not (dict-has-key? seen id)))
 
+  (define keep
+    (cond
+      [among (list->free-id-table among)]
+      [else #false]))
+
   (define (keep? id)
     (cond
-      [among (dict-has-key? among id)]
+      [among (dict-has-key? keep id)]
       [else #true]))
 
   (define output (make-queue))
@@ -131,9 +136,14 @@
   (define (unseen? id)
     (not (dict-has-key? seen id)))
 
+  (define keep
+    (cond
+      [among (list->free-id-table among)]
+      [else #false]))
+
   (define (keep? id)
     (cond
-      [among (dict-has-key? among id)]
+      [among (dict-has-key? keep id)]
       [else #true]))
 
   (define output (make-queue))
@@ -225,3 +235,8 @@
   (visit stx)
 
   (queue->list output))
+
+(define (list->free-id-table ids)
+  (for/dict! (make-free-id-table)
+      {[id (in-list ids)]}
+    (values id #true)))
