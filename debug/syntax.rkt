@@ -31,10 +31,10 @@
 
 (define-syntax (define-syntaxes/debug stx)
   (syntax-parse stx
-    [(_ {name:id ...} body:expr)
+    [(_ (~and names {_:id ...}) body:expr)
      (define/syntax-parse [fmt arg ...]
-       (syntax->format/args  (attribute name)))
-     #'(define-syntaxes {name ...}
+       (syntax->format/args  (attribute names)))
+     #'(define-syntaxes names
          (!dbg call-and-debug fmt arg ...
            #:thunk (lambda () (#%expression body))))]))
 

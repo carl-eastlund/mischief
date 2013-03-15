@@ -106,10 +106,10 @@
 
 (define-syntax (define-values/debug stx)
   (syntax-parse stx
-    [(_ {name:id ...} body:expr)
+    [(_ (~and names {_:id ...}) body:expr)
      (define/syntax-parse [fmt arg ...]
-       (syntax->format/args "definition: " (attribute name)))
-     #'(define-values {name ...}
+       (syntax->format/args "definition: " (attribute names)))
+     #'(define-values names
          (!dbg call-and-debug fmt arg ...
            #:thunk (lambda () (#%expression body))))]))
 
