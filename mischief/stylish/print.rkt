@@ -11,7 +11,8 @@
   data/queue
   mischief/struct
   mischief/boolean
-  mischief/stylish/signatures)
+  mischief/stylish/signatures
+  no-debug/low-level)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Unit Imports
@@ -62,12 +63,12 @@
 
 (define (print-expression name e st port)
   (cond!
-    [(type-of name e st) =>
+    [(low-level-debug type-of name e st) =>
      (lambda (type)
-       ((print-type-printer type) e port st))]
+       (low-level-debug (low-level-debug print-type-printer type) e port st))]
     [(print-style-default st) =>
      (lambda (default)
-       (default e port))]
+       (low-level-debug default e port))]
     [else (error name "cannot print expression: ~v" e)]))
 
 (define (type-of name x st)

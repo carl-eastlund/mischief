@@ -15,18 +15,29 @@
   identifier-upcase
   identifier-titlecase
   identifier-downcase
-  syntax-local-variable-reference)
+  syntax-local-variable-reference
+  check-missing-identifier)
 
 (require
   racket/function
   racket/bool
+  racket/dict
   racket/syntax
   syntax/parse
   syntax/srcloc
+  syntax/id-table
   mischief/fold
   mischief/visitor
   (for-template
     racket/base))
+
+(define (check-missing-identifier sub #:in super)
+  (define table (make-free-id-table))
+  (for {[id (in-list super)]}
+    (dict-set! table id #true))
+  (for/first {[id (in-list sub)]
+              #:unless (dict-has-key? table id)}
+    id))
 
 (define (syntax-local-variable-reference)
   (syntax-local-eval

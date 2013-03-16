@@ -8,7 +8,8 @@
   racket/list
   racket/match
   mischief/boolean
-  mischief/stylish/signatures)
+  mischief/stylish/signatures
+  no-debug/low-level)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Unit Imports
@@ -38,7 +39,7 @@
          [#\newline
           (error name "invalid newline at ~a in ~a" i (reconstruct))]
          [#\space
-          (print-separator name port 1 #true)
+          (low-level-debug print-separator name port 1 #true)
           (print-from-index (add1 i) args)]
          [ch
           (write-char ch port)
@@ -54,16 +55,16 @@
           (print-from-index (add1 i) args)]
          [(? char-numeric? ch)
           (define n (char->number ch))
-          (print-separator name port n #true)
+          (low-level-debug print-separator name port n #true)
           (print-from-index (add1 i) args)]
          [#\a (format-at-index i args display)]
          [#\s (format-at-index i args
                 (lambda (e port)
-                  (print-expression name e pst port)))]
+                  (low-level-debug print-expression name e pst port)))]
          [#\v (format-at-index i args
                 (lambda (x port)
-                  (define e (value->expression name x est))
-                  (print-expression name e pst port)))]
+                  (define e (low-level-debug value->expression name x est))
+                  (low-level-debug print-expression name e pst port)))]
          [#\f (format-at-index i args
                 (lambda (fmt+args port)
                   (unless (and
@@ -87,7 +88,7 @@
   (define (format-at-index i args show)
     (unless (cons? args)
       (error name "too few arguments at ~a in ~a" i (reconstruct)))
-    (print-to-stylish-port name port
+    (low-level-debug print-to-stylish-port name port
       #false #false #false ;; dummy left/right/cols
       (lambda (port)
         (show (first args) port)))

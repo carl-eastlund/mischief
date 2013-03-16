@@ -32,7 +32,8 @@
   mischief/string
   mischief/function
   mischief/stylish
-  mischief/location)
+  mischief/location
+  no-debug/low-level)
 
 (define-syntax (debug stx)
 
@@ -51,7 +52,7 @@
        #'{[arg.key-prefix ... arg-var] ...})
      (define/syntax-parse [fmt arg ...]
        (syntax->format/args "application: " (attribute app)))
-     #'(!dbg call-and-debug fmt arg ...
+     #'(low-level-debug call-and-debug fmt arg ...
          #:thunk
          (lambda ()
            (let {[fun-var (debug* . fun)]
@@ -81,7 +82,7 @@
     [(_ . e:expr)
      (define/syntax-parse [fmt arg ...]
        (syntax->format/args "expression: " (attribute e)))
-     #'(!dbg call-and-debug fmt arg ...
+     #'(low-level-debug call-and-debug fmt arg ...
          #:thunk (lambda () (#%expression e)))]))
 
 (define-syntax (define/debug stx)
@@ -90,10 +91,10 @@
      (define/syntax-parse [desc-fmt desc-arg ...]
        (syntax->format/args "function: " (attribute name)))
      #'(define (name . args)
-         (!dbg call-and-debug desc-fmt desc-arg ...
+         (low-level-debug call-and-debug desc-fmt desc-arg ...
            #:thunk
            (lambda ()
-             (!dbg debug-value "Argument ~s:" 'args.formal-id
+             (low-level-debug debug-value "Argument ~s:" 'args.formal-id
                #:value args.formal-id)
              ...
              . body)))]
@@ -101,7 +102,7 @@
      (define/syntax-parse [fmt arg ...]
        (syntax->format/args "definition: " (attribute name)))
      #'(define name
-         (!dbg call-and-debug fmt arg ...
+         (low-level-debug call-and-debug fmt arg ...
            #:thunk (lambda () (#%expression body))))]))
 
 (define-syntax (define-values/debug stx)
@@ -110,7 +111,7 @@
      (define/syntax-parse [fmt arg ...]
        (syntax->format/args "definition: " (attribute names)))
      #'(define-values names
-         (!dbg call-and-debug fmt arg ...
+         (low-level-debug call-and-debug fmt arg ...
            #:thunk (lambda () (#%expression body))))]))
 
 (define-syntax (lambda/debug stx)
@@ -119,10 +120,10 @@
      (define/syntax-parse [desc-fmt desc-arg ...]
        (syntax->format/args "" (attribute form)))
      #'(lambda args
-         (!dbg call-and-debug desc-fmt desc-arg ...
+         (low-level-debug call-and-debug desc-fmt desc-arg ...
            #:thunk
            (lambda ()
-             (!dbg debug-value "Argument ~s:" 'args.formal-id
+             (low-level-debug debug-value "Argument ~s:" 'args.formal-id
                #:value args.formal-id)
              ...
              . body)))]))
@@ -134,17 +135,17 @@
        (syntax->format/args "" (attribute form)))
      #'(case-lambda
          [args
-          (!dbg call-and-debug desc-fmt desc-arg ...
+          (low-level-debug call-and-debug desc-fmt desc-arg ...
             #:thunk
             (lambda ()
-              (!dbg debug-value "Argument ~s:" 'args.formal-id
+              (low-level-debug debug-value "Argument ~s:" 'args.formal-id
                 #:value args.formal-id)
               ...
               . body))]
          ...)]))
 
 (define (call-and-debug #:thunk thunk fmt . args)
-  (apply !dbg call-with-debug-frame fmt args
+  (apply low-level-debug call-with-debug-frame fmt args
     #:thunk
     (lambda ()
       (call-with-values
@@ -152,55 +153,57 @@
           (with-handlers
               {[exn:fail?
                 (lambda (x)
-                  (!dbg debug-exception "Exception:" #:exn x)
+                  (low-level-debug debug-exception "Exception:" #:exn x)
                   (raise x))]}
             (thunk)))
         (lambda results
-          (!dbg debug-values "Result:" #:values results)
+          (low-level-debug debug-values "Result:" #:values results)
           (apply values results))))))
 
 (define (debug-value #:value x fmt . args)
-  (apply !dbg debug-values #:values (list x) fmt args))
+  (apply low-level-debug debug-values #:values (list x) fmt args))
 
 (define (debug-values #:values xs fmt . args)
-  (apply !dbg debug-expr #:expr (values->expr xs) fmt args))
+  (apply low-level-debug debug-expr #:expr (values->expr xs) fmt args))
 
 (define (debug-exception #:exn x fmt . args)
-  (apply !dbg debug-expr #:expr (exn->expr x) fmt args))
+  (apply low-level-debug debug-expr #:expr (exn->expr x) fmt args))
 
 (define (debug-expr #:expr e fmt . args)
-  (!dbg stylish-dprintf "~f ~s" (list* fmt args) e))
+  (low-level-debug stylish-dprintf "~f ~s" (list* fmt args) e))
 
 (define (values->expr xs)
   (match xs
-    [(list x) (stylish-value->expr x)]
-    [_ (list* 'values (map stylish-value->expr xs))]))
+    [(list x) (low-level-debug stylish-value->expr x)]
+    [_ (list* 'values (low-level-debug map stylish-value->expr xs))]))
 
 (define (exn->expr x)
   (cond!
     [(and (exn? x) (not (struct? x)))
      (list 'error (exn-message x))]
     [else
-     (list 'raise (stylish-value->expr x))]))
+     (list 'raise (low-level-debug stylish-value->expr x))]))
 
 (define (call-with-debug-frame
           #:enter [enter-prefix (current-debug-enter-prefix)]
           #:exit [exit-prefix (current-debug-exit-prefix)]
           #:thunk thunk
           fmt . args)
-  (define (enter) (apply !dbg stylish-dprintf #:prefix enter-prefix fmt args))
-  (define (exit) (apply !dbg stylish-dprintf #:prefix exit-prefix fmt args))
+  (define (enter)
+    (apply low-level-debug stylish-dprintf #:prefix enter-prefix fmt args))
+  (define (exit)
+    (apply low-level-debug stylish-dprintf #:prefix exit-prefix fmt args))
   (define (work)
     (parameterize {[current-debug-depth (add1 (current-debug-depth))]}
-      (thunk)))
-  (dynamic-wind enter work exit))
+      (low-level-debug thunk)))
+  (low-level-debug dynamic-wind enter work exit))
 
 (define (dprintf
           #:prefix [prefix (current-debug-prefix)]
           fmt . args)
-  (eprintf "~a"
-    (indent prefix
-      (apply format fmt args))))
+  (low-level-debug eprintf "~a"
+    (low-level-debug indent prefix
+      (low-level-debug apply format fmt args))))
 
 (define (stylish-dprintf
           #:prefix [prefix (current-debug-prefix)]
@@ -208,8 +211,8 @@
           #:expr-style [est (current-expr-style)]
           #:print-style [pst (current-print-style)]
           fmt . args)
-  (!dbg dprintf #:prefix prefix "~a"
-    (apply !dbg stylish-format
+  (low-level-debug dprintf #:prefix prefix "~a"
+    (apply low-level-debug stylish-format
       #:columns (max 1 (- columns (indent-length) (string-length prefix)))
       #:expr-style est
       #:print-style pst
@@ -231,31 +234,3 @@
 (define current-debug-enter-prefix (make-parameter ">> "))
 (define current-debug-exit-prefix (make-parameter "<< "))
 (define current-debug-prefix (make-parameter "| "))
-
-;; Who debugs the debugger:
-(define !dbg
-  call #;
-  (let* {[!depth 0]}
-    (lambda/keywords (ks vs proc . xs)
-      (define name (or (object-name proc) proc))
-      (dynamic-wind
-        (lambda ()
-          (set! !depth (add1 !depth))
-          (eprintf "!!>> ~a ~a\n" !depth
-            (keyword-apply format-application ks vs proc xs)))
-        (lambda ()
-          (define results
-            (call-with-values
-              (lambda ()
-                (with-handlers
-                    {[(lambda (x) #true)
-                      (lambda (e)
-                        (eprintf "!!-- ~a ~a\n" !depth (format-exception e))
-                        (raise e))]}
-                  (keyword-apply proc ks vs xs)))
-              list))
-          (eprintf "!!-- ~a ~a\n" !depth (format-values results))
-          (apply values results))
-        (lambda ()
-          (eprintf "!!<< ~a ~s\n" !depth name)
-          (set! !depth (sub1 !depth)))))))
