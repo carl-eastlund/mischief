@@ -2,17 +2,43 @@
 (require mischief/require)
 
 (module+ test
-  (require rackunit/docs-complete))
+  (require rackunit/docs-complete)
+  (check-docs (quote mischief)))
 
-(define-syntax-rule (require/provide-phase-0 spec ...)
-  (require/provide
-    (only-meta-in 0
-      spec ...)))
+(module+ reflection
+  (require scribble/manual)
+  (provide phase-1-exports phase-0-exports)
+  (define phase-1-exports empty)
+  (define phase-0-exports empty))
+
+(define-syntax-rule (require/provide-phase-1 mod-path ...)
+  (begin
+    (require/provide
+      (only-meta-in 1
+        (for-syntax mod-path ...)))
+    (module+ reflection
+      (set! phase-1-exports
+        (list* 'mod-path ... phase-1-exports)))))
+
+(define-syntax-rule (require/provide-phase-0 mod-path ...)
+  (begin
+    (require/provide
+      (only-meta-in 0
+        mod-path ...))
+    (module+ reflection
+      (set! phase-0-exports
+        (list* 'mod-path ... phase-0-exports)))))
 
 (define-syntax-rule (require/provide/check-docs-phase-0 mod-path ...)
   (begin
     (require/provide-phase-0 mod-path ...)
-    (module+ test (check-docs (quote mod-path)) ...)))
+    (module+ test (check-docs (quote mod-path)) ...)
+    (module+ reflection
+      (set! phase-0-exports
+        (list* 'mod-path ... phase-0-exports)))))
+
+(require/provide-phase-1
+  racket)
 
 (require/provide-phase-0
   racket
@@ -66,8 +92,3 @@
     mischief/location
     mischief/fold
     mischief/id-table)
-
-(require/provide
-  (for-syntax
-    (only-meta-in 0
-      racket)))

@@ -3,6 +3,7 @@
 *.zo
 *.dep
 compiled/
+doc/
 
 # DrRacket generated files
 *.bak
