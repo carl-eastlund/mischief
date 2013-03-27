@@ -4,7 +4,7 @@
   quote-transformer
   rename-transformers
   rename-transformer
-  macro-transformer
+  set!-transformer
   id-transformer
   id-transform
   to-syntax
@@ -31,11 +31,11 @@
   (for-template
     racket/base))
 
-(define (check-missing-identifier sub #:in super)
+(define (check-missing-identifier actual expected)
   (define table (make-free-id-table))
-  (for {[id (in-list super)]}
+  (for {[id (in-list actual)]}
     (dict-set! table id #true))
-  (for/first {[id (in-list sub)]
+  (for/first {[id (in-list expected)]
               #:unless (dict-has-key? table id)}
     id))
 
@@ -148,7 +148,7 @@
 
 (define (do-macro-transform mt stx)
   (transform stx
-    (macro-transformer-proc mt)))
+    (set!-transformer-proc mt)))
 
 (define (do-id-transform it stx)
   (transform stx
@@ -174,7 +174,7 @@
               proc/stx)]))
   (self-transform proc stx))
 
-(struct macro-transformer [proc]
+(struct set!-transformer [proc]
   #:omit-define-syntaxes
   #:property prop:procedure do-macro-transform
   #:property prop:set!-transformer do-macro-transform)

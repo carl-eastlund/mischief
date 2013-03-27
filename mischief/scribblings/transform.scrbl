@@ -2,7 +2,7 @@
 
 @(require mischief/examples)
 
-@(define-example-form transform-examples mischief)
+@(define-example-form transform-examples mischief (for-syntax mischief))
 
 @title[#:tag "transform"]{@racketmodname[mischief/transform]: Syntax Transformers}
 @defmodule[mischief/transform]
@@ -119,5 +119,123 @@ Change the letters in the name of an identifier by analogy to
 (identifier-upcase #'Two-words)
 (identifier-downcase #'Two-words)
 (identifier-titlecase #'Two-words)
+]
+}
+
+@section{Common Syntax Transformer Patterns}
+
+@defproc[
+(id-transform
+  [original syntax?]
+  [replace (or/c syntax? (-> identifier? syntax?))])
+syntax?
+]{
+Transforms the identifier that controls the expansion of @racket[original] as a
+macro application, @racket[set!] transformer application, or identifier macro
+reference.  Replaces that identifier with @racket[replace] if @racket[replace]
+is a syntax object, or with the result of applying @racket[replace] to the
+identifier if @racket[replace] is a procedure.
+
+@transform-examples[
+(id-transform #'simple-identifier #'replacement)
+(id-transform #'(simple macro application) #'replacement)
+(id-transform #'(set! macro application) #'replacement)
+]
+}
+
+@defproc[
+(id-transformer [proc (-> identifier? syntax?)])
+(and/c set!-transformer? (-> syntax? syntax?))
+]{
+Produces a @racket[set!] transformer that, when defined as a macro, applies
+@racket[proc] to the name of the macro in any application.
+
+@transform-examples[
+(define x 1)
+(define-syntax X (id-transformer identifier-downcase))
+(set! X (add1 X))
+X
+]
+}
+
+@defproc[
+(set!-transformer [proc (-> syntax? syntax?)])
+(and/c set!-transformer? (-> syntax? syntax?))
+]{
+Produces a @racket[set!] transformer that can also be used as a procedure.
+
+@transform-examples[
+(define-for-syntax f
+  (set!-transformer
+    (lambda {x}
+      #'(error 'undefined "Oh, no!"))))
+(define-syntax (x stx) (f stx))
+x
+(x 1)
+(set! x 1)
+(define-syntax y f)
+y
+(y 1)
+(set! y 1)
+]
+}
+
+@deftogether[(
+@defproc[
+(rename-transformer [id identifier?])
+(and/c (-> syntax? syntax?) rename-transformer?)
+]
+@defproc[
+(rename-transformers [id identifier?] ...)
+(values (and/c (-> syntax? syntax?) rename-transformer?) ...)
+]
+)]{
+Produces one or many rename transformers that can also be used as procedures.
+
+@transform-examples[
+(define-syntaxes {pair left right}
+  (rename-transformers #'cons #'car #'cdr))
+(pair (left '(1 2)) (right '(3 4)))
+(define-syntax (tuple stx)
+  ((rename-transformer #'list) stx))
+tuple
+(tuple 1 2 3)
+]
+}
+
+@section{Phase 1 Helpers}
+
+@defproc[(syntax-local-variable-reference) variable-reference?]{
+Produces an anonymous variable reference representing the context currently
+being expanded.
+
+@transform-examples[
+(module var-ref-example racket
+  (require (for-syntax mischief/transform))
+  (define-syntax (macro stx)
+    (printf "Transforming: ~s\n"
+      (resolved-module-path-name
+        (variable-reference->resolved-module-path
+          (syntax-local-variable-reference))))
+    #'(begin))
+  (macro))
+(require 'var-ref-example)
+]
+}
+
+@defproc[
+(check-missing-identifier
+  [actual (listof identifier?)]
+  [expected (listof identifier?)])
+(or/c identifier? #false)
+]{
+If @racket[actual] is missing a @racket[free-identifier=?] counterpart for any
+identifier in @racket[expected], produces the first such identifier found.
+Otherwise, produces @racket[#false]
+
+@transform-examples[
+(check-missing-identifier
+  (list #'cons #'car #'cdr)
+  (list #'cons #'first #'rest))
 ]
 }
