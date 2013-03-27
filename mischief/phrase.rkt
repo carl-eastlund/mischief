@@ -18,8 +18,13 @@
         (define arity (procedure-arity proc-or-arity))
         (define-values {required optional} (procedure-keywords proc-or-arity))
         (arity->phrase arity required optional)]
-       [else (arity->phrase proc-or-arity '() '())])]
-    [(arity required optional) (arity->phrase arity required optional)]))
+       [else
+        (arity->phrase (normalize-procedure-arity proc-or-arity) '() '())])]
+    [(arity required optional)
+     (arity->phrase
+       (normalize-procedure-arity arity)
+       (sort required keyword<?)
+       (and optional (sort optional keyword<?)))]))
 
 (define (arity->phrase arity required optional)
   (list->phrase #:separator ";"
@@ -32,9 +37,8 @@
   (cond
     [(list? arity)
      (list->phrase
-       #:none (format "~a (~a)"
-                "no accepted number of arguments"
-                "cannot be applied")
+       #:final "or"
+       #:none "no accepted number of arguments (cannot be applied)"
        (map positional-arity-clause->phrase arity))]
     [else (positional-arity-clause->phrase arity)]))
 
@@ -64,9 +68,13 @@
 (define (optional-only optional required)
   (cond
     [(empty? required) optional]
+    [(empty? optional) empty]
     [(keyword<? (first optional) (first required))
      (cons (first optional) (optional-only (rest optional) required))]
-    [else (optional (rest optional) (rest required))]))
+    [(keyword<? (first required) (first optional))
+     (optional-only optional (rest required))]
+    [else
+     (optional-only (rest optional) (rest required))]))
 
 (define (keyword-arity->phrase keywords #:optional? [optional? #false])
   (cond
@@ -79,7 +87,7 @@
             (if optional? "optional " "")
             (list->phrase
               (for/list {[kw (in-list keywords)]}
-                (format "~s" keywords))))]))
+                (format "~s" kw))))]))
 
 (define (list->phrase xs
           #:none [none "none"]

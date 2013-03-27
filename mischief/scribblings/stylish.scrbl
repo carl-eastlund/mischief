@@ -2,7 +2,7 @@
 
 @(require mischief/examples)
 
-@title[#:tag "stylish"]{Stylish Printing, An Alternative To Pretty Printing}
+@title[#:tag "stylish"]{@racketmodname[mischief/stylish]: Stylish Printing, an Alternative to Pretty Printing}
 @require[(for-label mischief/stylish)]
 @defmodule[mischief/stylish]
 
@@ -26,7 +26,7 @@ customize, and supports @racket[printf]-style formatted printing.
 (stylish-value->expr x)
 ]
 
-@section{Rendering Values Converted To Expressions}
+@section{Rendering Values Converted to Expressions}
 
 @defproc[
 (stylish-print [x any/c]
@@ -133,7 +133,7 @@ Renders @racket[x] as a string.  As @racket[stylish-value->string], assuming
 @racket[x] has already been converted to an expression.
 }
 
-@section{Converting Values To Expressions}
+@section{Converting Values to Expressions}
 
 @defproc[
 (stylish-value->expr [x any/c]
