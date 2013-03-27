@@ -45,8 +45,36 @@
 
   (contract-out
 
+    [stylish-print
+     (->*
+         {any/c}
+         {output-port?
+          #:expr-style expr-style?
+          #:print-style print-style?
+          #:left exact-nonnegative-integer?
+          #:right exact-nonnegative-integer?
+          #:columns (or/c exact-nonnegative-integer? 'infinity)}
+       void?)]
+    [stylish-println
+     (->*
+         {any/c}
+         {output-port?
+          #:expr-style expr-style?
+          #:print-style print-style?
+          #:left exact-nonnegative-integer?
+          #:columns (or/c exact-nonnegative-integer? 'infinity)}
+       void?)]
     [stylish-print-handler
      (-> any/c void?)]
+    [stylish-value->string
+     (->*
+         {any/c}
+         {#:expr-style expr-style?
+          #:print-style print-style?
+          #:left exact-nonnegative-integer?
+          #:right exact-nonnegative-integer?
+          #:columns (or/c exact-nonnegative-integer? 'infinity)}
+       string?)]
 
     [stylish-format
      (->*
@@ -69,35 +97,6 @@
           #:columns (or/c exact-nonnegative-integer? 'infinity)}
        #:rest list?
        void?)]
-
-    [stylish-print
-     (->*
-         {any/c}
-         {output-port?
-          #:expr-style expr-style?
-          #:print-style print-style?
-          #:left exact-nonnegative-integer?
-          #:right exact-nonnegative-integer?
-          #:columns (or/c exact-nonnegative-integer? 'infinity)}
-       void?)]
-    [stylish-println
-     (->*
-         {any/c}
-         {output-port?
-          #:expr-style expr-style?
-          #:print-style print-style?
-          #:left exact-nonnegative-integer?
-          #:columns (or/c exact-nonnegative-integer? 'infinity)}
-       void?)]
-    [stylish-value->string
-     (->*
-         {any/c}
-         {#:expr-style expr-style?
-          #:print-style print-style?
-          #:left exact-nonnegative-integer?
-          #:right exact-nonnegative-integer?
-          #:columns (or/c exact-nonnegative-integer? 'infinity)}
-       string?)]
 
     [stylish-print-expr
      (->*

@@ -48,19 +48,7 @@ The @racketmodname[mischief] library combines
 
 @include-section["debugging.scrbl"]
 
-@section[#:style '(toc)]{Printing and Error Messages}
-
-@subsection{stylish}
-@require[(for-label mischief/stylish)]
-@defmodule[mischief/stylish]
-
-@subsection{phrase}
-@require[(for-label mischief/phrase)]
-@defmodule[mischief/phrase]
-
-@subsection{error}
-@require[(for-label mischief/error)]
-@defmodule[mischief/error]
+@include-section["printing.scrbl"]
 
 @section[#:style '(toc)]{Macros and Syntax Transformers}
 
