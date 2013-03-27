@@ -2,7 +2,7 @@
 
 @(require mischief/examples)
 
-@title{stylish}
+@title[#:tag "stylish"]{Stylish Printing, An Alternative To Pretty Printing}
 @require[(for-label mischief/stylish)]
 @defmodule[mischief/stylish]
 
