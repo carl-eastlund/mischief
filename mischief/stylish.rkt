@@ -150,38 +150,42 @@
           #:wide? boolean?}
        void?)]
 
+    [current-stylish-print-columns
+     (parameter/c (or/c exact-nonnegative-integer? 'infinity))]
+
     [print-style? predicate/c]
     [empty-print-style print-style?]
     [simple-print-style print-style?]
     [default-print-style print-style?]
-    [current-print-style (parameter/c print-style?)]
-    [set-print-style-default-printer
-     (->
-       print-style?
-       (or/c (-> any/c output-port? void?) #false)
-       print-style?)]
     [print-style-extension? predicate/c]
-    [current-stylish-print-columns
-     (parameter/c (or/c exact-nonnegative-integer? 'infinity))]
-
-    [expr-style? predicate/c]
-    [empty-expr-style expr-style?]
-    [simple-expr-style expr-style?]
-    [default-expr-style expr-style?]
-    [current-expr-style (parameter/c expr-style?)]
-    [set-expr-style-default-convert
-     (->
-       expr-style?
-       (or/c (-> any/c any/c) #false)
-       expr-style?)]
-    [expr-style-extension? predicate/c]
-
+    [print-style-extension
+      (->
+        predicate/c
+        (-> any/c output-port? print-style? any)
+        print-style-extension?)]
     [extend-print-style
       (->*
           {print-style?}
           {#:after? boolean?}
         #:rest (listof print-style-extension?)
         print-style?)]
+    [set-print-style-default-printer
+     (->
+       print-style?
+       (or/c (-> any/c output-port? void?) #false)
+       print-style?)]
+    [current-print-style (parameter/c print-style?)]
+
+    [expr-style? predicate/c]
+    [empty-expr-style expr-style?]
+    [simple-expr-style expr-style?]
+    [default-expr-style expr-style?]
+    [set-expr-style-default-convert
+     (->
+       expr-style?
+       (or/c (-> any/c any/c) #false)
+       expr-style?)]
+    [expr-style-extension? predicate/c]
     [extend-expr-style
       (->*
           {expr-style?}
@@ -195,8 +199,4 @@
           {(-> any/c expr-style? boolean?)
            boolean?}
         expr-style-extension?)]
-    [print-style-extension
-      (->
-        predicate/c
-        (-> any/c output-port? print-style? any)
-        print-style-extension?)]))
+    [current-expr-style (parameter/c expr-style?)]))

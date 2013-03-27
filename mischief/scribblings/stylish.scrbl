@@ -161,6 +161,87 @@ a string, @racket[stylish-format] renders the output of @racket[stylish-printf]
 as a string.
 }
 
+@defproc[
+(call-with-stylish-port
+  [port output-port?]
+  [proc (-> output-port? any)]
+  [#:left left exact-nonnegative-integer? 0]
+  [#:right right exact-nonnegative-integer? 0]
+  [#:columns cols
+             (or/c exact-nonnegative-integer? 'infinity)
+             (current-stylish-print-columns)])
+any
+]{
+Used for recursive stylish-printing; calls @racket[proc] with an output port
+that records the structure of printed values, breaks lines and indents them
+appropriately, and prints the final rendered form on @racket[port] when
+@racket[proc] returns.
+}
+
+@defproc[
+(stylish-print-separator
+  [port output-port?]
+  [#:indent indent exact-nonnegative-integer? 0]
+  [#:wide? wide? boolean? #t])
+void?
+]{
+Prints whitespace to @racket[port].  If @racket[port] is created by
+@racket[call-with-stylish-port], then the separator may be used to break lines
+by printing a newline and indenting to @racket[indent] spaces beyond the start
+of the current line at the current level of recursive stylish-printing.
+Otherwise, the separator prints a single space if @racket[wide?] is true and
+prints nothing if @racket[wide?] is false.
+}
+
+@defparam[
+current-stylish-print-columns
+cols
+(or/c exact-nonnegative-integer? 'infinity)
+]{
+Controls the number of columns used for breaking lines and indenting by
+@racket[stylish-print] and related procedures, when no explicit number of
+columns is given.
+}
+
+@defproc[(print-style? [x any/c]) boolean?]{
+Recognizes print styles, which control the way stylish-printing renders
+values that represent expressions as text.
+}
+
+@defthing[empty-print-style print-style?]{
+A degenerate style that will not print; extend this to build new print styles
+from scratch.
+}
+
+@defthing[simple-print-style print-style?]{
+A basic print style that uses @racket[write] for all values.
+}
+
+@defthing[default-print-style print-style?]{
+A print style that renders most readable Racket types in a form that will
+@racket[read] as the same thing.
+}
+
+@defproc[(print-style-extension? [x any/c]) boolean?]{
+Recognizes print style extensions, which control the way stylish-printing
+renders some specific type of values representing expressions as text.
+}
+
+@defproc[
+(print-style-extension
+  [pred predicate/c]
+  [proc (-> pred output-port? print-style? void?)])
+print-style-extension?
+]{
+Creates a print style extension that prints values satisfying @racket[pred]
+using @racket[proc], given the current output port and print style.
+}
+
+@defparam[current-print-style pst print-style?]{
+Controls the print style used by @racket[stylish-print] and related procedures
+if none is given explicitly.  Defaults to @racket[default-print-style].
+}
+
 @defform[(with-stylish-port body ...+)]{
 Equivalent to:
 @(racketblock
