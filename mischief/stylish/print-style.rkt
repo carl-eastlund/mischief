@@ -41,7 +41,7 @@
           #:left [left "("]
           #:right [right ")"]
           [indent 0]
-          [print-elem stylish-print-expr])
+          [print-elem stylish-write])
   (cond
     [(special? x)
      (print-special x port st print-elem)]
@@ -58,7 +58,7 @@
 
 (define (print-tail x port st
           [indent 0]
-          [print-elem stylish-print-expr])
+          [print-elem stylish-write])
   (cond
     [(special? x)
      (print-dotted x port st indent
@@ -75,8 +75,8 @@
           #:left [left "("]
           #:right [right ")"]
           [indent 0]
-          [print-car stylish-print-expr]
-          [print-cdr stylish-print-expr])
+          [print-car stylish-write]
+          [print-cdr stylish-write])
   (write-string left port)
   (call-with-stylish-port port
     (lambda (port)
@@ -86,7 +86,7 @@
 
 (define (print-dotted x port st
           [indent 1]
-          [print-elem stylish-print-expr])
+          [print-elem stylish-write])
   (stylish-print-separator port #:indent indent)
   (write-string "." port)
   (stylish-print-separator port #:indent indent)
@@ -100,7 +100,7 @@
     (hash-has-key? special-keyword-table
       (special-keyword x))))
 
-(define (print-special x port st [print-contents stylish-print-expr])
+(define (print-special x port st [print-contents stylish-write])
   (write-string (special-prefix x) port)
   (print-contents (special-contents x) port st))
 
@@ -125,7 +125,7 @@
 ;; Print Vector
 
 (define (print-vector vec port st
-          [print-elem stylish-print-expr])
+          [print-elem stylish-write])
   (write-string "#" port)
   (print-list* (vector->list vec) port st
     0 print-elem #:left "[" #:right "]"))
@@ -134,7 +134,7 @@
 ;; Print Box
 
 (define (print-box b port st
-          [print-elem stylish-print-expr])
+          [print-elem stylish-write])
   (write-string "#&" port)
   (print-elem (unbox b) port st))
 
@@ -142,8 +142,8 @@
 ;; Print Hash
 
 (define (print-hash ht port st
-          [print-key stylish-print-expr]
-          [print-value stylish-print-expr])
+          [print-key stylish-write]
+          [print-value stylish-write])
   (cond
     [(hash-eq? ht) (write-string "#hasheq" port)]
     [(hash-eqv? ht) (write-string "#hasheqv" port)]
@@ -158,8 +158,8 @@
 ;; Print Prefab Struct
 
 (define (print-prefab x port st
-          [print-key stylish-print-expr]
-          [print-value stylish-print-expr])
+          [print-key stylish-write]
+          [print-value stylish-write])
   (write-string "#s(" port)
   (call-with-stylish-port port
     (lambda (port)
@@ -171,7 +171,7 @@
 ;; Print Comment
 
 (define (print-comment x port st
-          [print-expr stylish-print-expr])
+          [print-expr stylish-write])
   (print-expr (stylish-comment-expr-expr x) port st)
   (stylish-print-separator port)
   (call-with-stylish-port port

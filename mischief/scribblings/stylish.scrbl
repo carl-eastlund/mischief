@@ -22,7 +22,7 @@ customize, and supports @racket[printf]-style formatted printing.
   x
   x)
 (stylish-print x #:columns 20)
-(stylish-print-expr x #:columns 20)
+(stylish-write x #:columns 20)
 (stylish-value->expr x)
 ]
 
@@ -65,13 +65,8 @@ newline.  Equivalent to calling @racket[stylish-print] followed by
 @racket[(newline port)].
 }
 
-@defproc[(stylish-print-handler [x any/c]) void?]{
-Intended for use with @racket[current-print].  Calls
-@racket[(stylish-println x)] unless @racket[x] is @racket[(void)].
-}
-
 @defproc[
-(stylish-value->string [x any/c]
+(stylish-print-as-string [x any/c]
   [#:expr-style est expr-style? (current-expr-style)]
   [#:print-style pst print-style? (current-print-style)]
   [#:left left exact-nonnegative-integer? 0]
@@ -86,10 +81,15 @@ combining @racket[get-output-string], @racket[stylish-print], and
 @racket[open-output-string].
 }
 
+@defproc[(stylish-print-handler [x any/c]) void?]{
+Intended for use with @racket[current-print].  Calls
+@racket[(stylish-println x)] unless @racket[x] is @racket[(void)].
+}
+
 @section{Rendering Values Without Conversion}
 
 @defproc[
-(stylish-print-expr [x any/c]
+(stylish-write [x any/c]
   [port output-port? (current-output-port)]
   [pst print-style? (current-print-style)]
   [#:left left exact-nonnegative-integer? 0]
@@ -104,7 +104,7 @@ assuming @racket[x] has already been converted to an expression.
 }
 
 @defproc[
-(stylish-println-expr [x any/c]
+(stylish-writeln [x any/c]
   [port output-port? (current-output-port)]
   [pst print-style? (current-print-style)]
   [#:left left exact-nonnegative-integer? 0]
@@ -120,7 +120,7 @@ expression.
 }
 
 @defproc[
-(stylish-expr->string [x any/c]
+(stylish-write-as-string [x any/c]
   [pst print-style? (current-print-style)]
   [#:left left exact-nonnegative-integer? 0]
   [#:right right exact-nonnegative-integer? 0]
@@ -129,7 +129,7 @@ expression.
              (current-stylish-print-columns)])
 string?
 ]{
-Renders @racket[x] as a string.  As @racket[stylish-value->string], assuming
+Renders @racket[x] as a string.  As @racket[stylish-print-as-string], assuming
 @racket[x] has already been converted to an expression.
 }
 
@@ -169,7 +169,7 @@ void?
 Similar to @racket[fprintf], prints @racket[fmt], substituting a printed
 representation of each @racket[arg] for formatting sequences.  The sequence
 @racketvalfont{~a} prints an @racket[arg] using @racket[display];
-@racketvalfont{~s} uses @racket[stylish-print-expr]; and @racketvalfont{~v}
+@racketvalfont{~s} uses @racket[stylish-write]; and @racketvalfont{~v}
 uses @racket[stylish-print].  The sequence @racketvalfont{~f} expects the
 corresponding arg to have the form @racket[(list fmt arg ...)], and prints
 recursively using @racket[stylish-printf].

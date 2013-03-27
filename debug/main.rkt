@@ -174,15 +174,15 @@
 
 (define (values->expr xs)
   (match xs
-    [(list x) (low-level-debug stylish-value->expr x)]
-    [_ (list* 'values (low-level-debug map stylish-value->expr xs))]))
+    [(list x) (low-level-debug stylish-print-as-string x)]
+    [_ (list* 'values (low-level-debug map stylish-print-as-string xs))]))
 
 (define (exn->expr x)
   (cond!
     [(and (exn? x) (not (struct? x)))
      (list 'error (exn-message x))]
     [else
-     (list 'raise (low-level-debug stylish-value->expr x))]))
+     (list 'raise (low-level-debug stylish-print-as-string x))]))
 
 (define (call-with-debug-frame
           #:enter [enter-prefix (current-debug-enter-prefix)]

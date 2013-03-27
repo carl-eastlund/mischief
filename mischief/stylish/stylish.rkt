@@ -88,7 +88,7 @@
       (print-expression 'stylish-println e pst port)))
   (newline port))
 
-(define (stylish-value->string v
+(define (stylish-print-as-string v
           #:expr-style [est (current-expr-style)]
           #:print-style [pst (current-print-style)]
           #:left [left 0]
@@ -107,7 +107,7 @@
   (log-debugf "Return:\n~e\n" s)
   s)
 
-(define (stylish-print-expr e
+(define (stylish-write e
           [port (current-output-port)]
           [pst (current-print-style)]
           #:left [left 0]
@@ -118,7 +118,7 @@
       (print-expression 'stylish-print-expr e pst port)
       (void))))
 
-(define (stylish-println-expr e
+(define (stylish-writeln e
           [port (current-output-port)]
           [pst (current-print-style)]
           #:left [left 0]
@@ -128,7 +128,7 @@
       (print-expression 'stylish-println-expr e pst port)))
   (newline port))
 
-(define (stylish-expr->string e
+(define (stylish-write-as-string e
           [pst (current-print-style)]
           #:left [left 0]
           #:right [right 0]

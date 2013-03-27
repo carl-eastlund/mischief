@@ -66,7 +66,7 @@
        void?)]
     [stylish-print-handler
      (-> any/c void?)]
-    [stylish-value->string
+    [stylish-print-as-string
      (->*
          {any/c}
          {#:expr-style expr-style?
@@ -76,7 +76,7 @@
           #:columns (or/c exact-nonnegative-integer? 'infinity)}
        string?)]
 
-    [stylish-print-expr
+    [stylish-write
      (->*
          {any/c}
          {output-port?
@@ -85,7 +85,7 @@
           #:right exact-nonnegative-integer?
           #:columns (or/c exact-nonnegative-integer? 'infinity)}
        void?)]
-    [stylish-println-expr
+    [stylish-writeln
      (->*
          {any/c}
          {output-port?
@@ -93,7 +93,7 @@
           #:left exact-nonnegative-integer?
           #:columns (or/c exact-nonnegative-integer? 'infinity)}
        void?)]
-    [stylish-expr->string
+    [stylish-write-as-string
      (->*
          {any/c}
          {print-style?

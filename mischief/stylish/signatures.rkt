@@ -72,11 +72,12 @@
 
    stylish-print
    stylish-println
-   stylish-value->string
+   stylish-print-as-string
 
-   stylish-print-expr
-   stylish-println-expr
-   stylish-expr->string
+   stylish-write
+   stylish-writeln
+   stylish-write-as-string
+
    stylish-print-separator
    call-with-stylish-port
 
