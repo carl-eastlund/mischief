@@ -50,51 +50,7 @@ The @racketmodname[mischief] library combines
 
 @include-section["printing.scrbl"]
 
-@section[#:style '(toc)]{Macros and Syntax Transformers}
-
-@subsection{shorthand}
-@require[(for-label mischief/shorthand)]
-@defmodule[mischief/shorthand]
-
-@subsection{transform}
-@require[(for-label mischief/transform)]
-@defmodule[mischief/transform]
-
-@subsection{parse}
-@require[(for-label mischief/parse)]
-@defmodule[mischief/parse]
-
-@subsection{scope}
-@require[(for-label mischief/scope)]
-@defmodule[mischief/scope]
-
-@subsection{dye-pack}
-@require[(for-label mischief/dye-pack)]
-@defmodule[mischief/dye-pack]
-
-@subsection{id-table}
-@require[(for-label mischief/id-table)]
-@defmodule[mischief/id-table]
-
-@subsection{srcloc}
-@require[(for-label mischief/srcloc)]
-@defmodule[mischief/srcloc]
-
-@subsection{location}
-@require[(for-label mischief/location)]
-@defmodule[mischief/location]
-
-@subsection{kernel-syntax}
-@require[(for-label mischief/kernel-syntax)]
-@defmodule[mischief/kernel-syntax]
-
-@subsection{preserve-expensive-metadata}
-@require[(for-label mischief/preserve-expensive-metadata)]
-@defmodule[mischief/preserve-expensive-metadata]
-
-@subsection{stepper}
-@require[(for-label mischief/stepper)]
-@defmodule[mischief/stepper]
+@include-section["metaprogramming.scrbl"]
 
 @section[#:style '(toc)]{Modules}
 
