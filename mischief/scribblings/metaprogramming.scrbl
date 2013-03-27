@@ -62,13 +62,7 @@ interface to the @seclink["top" #:doc '(lib
 
 @include-section["metaprogramming-simple.scrbl"]
 
-@section{transform}
-@require[(for-label mischief/transform)]
-@defmodule[mischief/transform]
-
-@section{parse}
-@require[(for-label mischief/parse)]
-@defmodule[mischief/parse]
+@include-section["metaprogramming-moderate.scrbl"]
 
 @section{scope}
 @require[(for-label mischief/scope)]
@@ -81,14 +75,6 @@ interface to the @seclink["top" #:doc '(lib
 @section{id-table}
 @require[(for-label mischief/id-table)]
 @defmodule[mischief/id-table]
-
-@section{srcloc}
-@require[(for-label mischief/srcloc)]
-@defmodule[mischief/srcloc]
-
-@section{location}
-@require[(for-label mischief/location)]
-@defmodule[mischief/location]
 
 @section{kernel-syntax}
 @require[(for-label mischief/kernel-syntax)]

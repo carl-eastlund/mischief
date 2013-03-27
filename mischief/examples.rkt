@@ -3,12 +3,26 @@
 (provide
   examples/evaluator
   make-example-evaluator
-  define-example-evaluator)
+  define-example-evaluator
+  define-example-form)
 
 (require
   scribble/eval
   racket/sandbox
   (for-syntax mischief))
+
+(define-syntax (define-example-form stx)
+  (syntax-parse stx
+    [(_ name:id lang:module-path
+        (~or spec:module-path
+          ({~literal for-syntax} phase-1-spec:module-path))
+        ...)
+     #'(begin
+         (define-example-evaluator evaluator lang
+           spec ...
+           (for-syntax phase-1-spec) ...)
+         (... (define-shorthand (name body ...)
+                (examples #:eval evaluator body ...))))]))
 
 (define-syntax (define-example-evaluator stx)
   (syntax-parse stx
