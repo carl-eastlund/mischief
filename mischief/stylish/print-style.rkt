@@ -40,7 +40,7 @@
 (define (print-list* x port st
           #:left [left "("]
           #:right [right ")"]
-          [indent 1]
+          [indent 0]
           [print-elem stylish-print-expr])
   (cond
     [(special? x)
@@ -57,7 +57,7 @@
      (write-string right port)]))
 
 (define (print-tail x port st
-          [indent 1]
+          [indent 0]
           [print-elem stylish-print-expr])
   (cond
     [(special? x)
