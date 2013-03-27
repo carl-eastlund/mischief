@@ -7,9 +7,7 @@ kinds of macros that grow beyond simple one-liners.
 
 @include-section["transform.scrbl"]
 
-@section{parse}
-@require[(for-label mischief/parse)]
-@defmodule[mischief/parse]
+@include-section["parse.scrbl"]
 
 @section{srcloc}
 @require[(for-label mischief/srcloc)]
