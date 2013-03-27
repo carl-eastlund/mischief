@@ -76,28 +76,6 @@
           #:columns (or/c exact-nonnegative-integer? 'infinity)}
        string?)]
 
-    [stylish-format
-     (->*
-         {string?}
-         {#:expr-style expr-style?
-          #:print-style print-style?
-          #:left exact-nonnegative-integer?
-          #:right exact-nonnegative-integer?
-          #:columns (or/c exact-nonnegative-integer? 'infinity)}
-       #:rest list?
-       string?)]
-    [stylish-printf
-     (->*
-         {string?}
-         {#:port output-port?
-          #:expr-style expr-style?
-          #:print-style print-style?
-          #:left exact-nonnegative-integer?
-          #:right exact-nonnegative-integer?
-          #:columns (or/c exact-nonnegative-integer? 'infinity)}
-       #:rest list?
-       void?)]
-
     [stylish-print-expr
      (->*
          {any/c}
@@ -123,12 +101,40 @@
           #:right exact-nonnegative-integer?
           #:columns (or/c exact-nonnegative-integer? 'infinity)}
        string?)]
-    [stylish-print-separator
+
+    [stylish-value->expr
      (->*
-         {output-port?}
-         {#:indent exact-nonnegative-integer?
-          #:wide? boolean?}
+         {any/c}
+         {expr-style?}
+       any/c)]
+    [stylish-quotable-value?
+     (->*
+         {any/c}
+         {expr-style?}
+       boolean?)]
+
+    [stylish-printf
+     (->*
+         {string?}
+         {#:port output-port?
+          #:expr-style expr-style?
+          #:print-style print-style?
+          #:left exact-nonnegative-integer?
+          #:right exact-nonnegative-integer?
+          #:columns (or/c exact-nonnegative-integer? 'infinity)}
+       #:rest list?
        void?)]
+    [stylish-format
+     (->*
+         {string?}
+         {#:expr-style expr-style?
+          #:print-style print-style?
+          #:left exact-nonnegative-integer?
+          #:right exact-nonnegative-integer?
+          #:columns (or/c exact-nonnegative-integer? 'infinity)}
+       #:rest list?
+       string?)]
+
     [call-with-stylish-port
      (->*
          {output-port?
@@ -137,17 +143,12 @@
           #:right exact-nonnegative-integer?
           #:columns (or/c exact-nonnegative-integer? 'infinity)}
        any)]
-
-    [stylish-quotable-value?
+    [stylish-print-separator
      (->*
-         {any/c}
-         {expr-style?}
-       boolean?)]
-    [stylish-value->expr
-     (->*
-         {any/c}
-         {expr-style?}
-       any/c)]
+         {output-port?}
+         {#:indent exact-nonnegative-integer?
+          #:wide? boolean?}
+       void?)]
 
     [print-style? predicate/c]
     [empty-print-style print-style?]
