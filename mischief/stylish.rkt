@@ -180,18 +180,7 @@
     [empty-expr-style expr-style?]
     [simple-expr-style expr-style?]
     [default-expr-style expr-style?]
-    [set-expr-style-default-convert
-     (->
-       expr-style?
-       (or/c (-> any/c any/c) #false)
-       expr-style?)]
     [expr-style-extension? predicate/c]
-    [extend-expr-style
-      (->*
-          {expr-style?}
-          {#:after? boolean?}
-        #:rest (listof expr-style-extension?)
-        expr-style?)]
     [expr-style-extension
       (->*
           {predicate/c
@@ -199,4 +188,15 @@
           {(-> any/c expr-style? boolean?)
            boolean?}
         expr-style-extension?)]
+    [extend-expr-style
+      (->*
+          {expr-style?}
+          {#:after? boolean?}
+        #:rest (listof expr-style-extension?)
+        expr-style?)]
+    [set-expr-style-default-convert
+     (->
+       expr-style?
+       (or/c (-> any/c any/c) #false)
+       expr-style?)]
     [current-expr-style (parameter/c expr-style?)]))

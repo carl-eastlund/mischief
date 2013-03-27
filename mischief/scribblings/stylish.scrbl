@@ -237,9 +237,96 @@ Creates a print style extension that prints values satisfying @racket[pred]
 using @racket[proc], given the current output port and print style.
 }
 
+@defproc[
+(extend-print-style [pst print-style?] [ext print-style-extension?] ...
+  [#:after? after? boolean? #false])
+print-style?
+]{
+Adds the given extensions to @racket[pst].  Checks the new extensions before
+any existing extensions, unless @racket[after?] is true.
+}
+
+@defproc[
+(set-print-style-default-printer
+  [pst print-style?]
+  [proc (or/c (-> any/c output-port? void?) #false)])
+print-style?
+]{
+Updates @racket[pst] to use @racket[proc] to print any value that has no
+specific extension.
+}
+
 @defparam[current-print-style pst print-style?]{
 Controls the print style used by @racket[stylish-print] and related procedures
 if none is given explicitly.  Defaults to @racket[default-print-style].
+}
+
+@defproc[(expr-style? [x any/c]) boolean?]{
+Recognizes expression styles, which control the way values are converted to
+expressions.
+}
+
+@defthing[empty-expr-style expr-style?]{
+A degenerate expression style that cannot convert any values; extend this to
+build new expression styles from scratch.
+}
+
+@require[(for-label mzlib/pconvert)]
+@defthing[simple-expr-style expr-style?]{
+A basic expression style that uses @racket[print-convert] for all values.
+}
+
+@defthing[default-expr-style expr-style?]{
+An expression style that converts most built-in Racket types to an expression
+that will @racket[eval] to the same thing.
+}
+
+@defproc[(expr-style-extension? [x any/c]) boolean?]{
+Recognizes expression style extensions, which control the way that specific
+types of values are converted to expressions.
+}
+
+@defproc[
+(expr-style-extension
+  [pred predicate/c]
+  [convert (-> pred expr-style? any/c)]
+  [quotable? (-> pred expr-style? boolean?) (lambda {x est} #false)]
+  [try-quote? boolean? #true])
+expr-style-extension?
+]{
+Produces an extension that converts values satisfying @racket[pred] to
+expressions using @racket[convert], given the current expression style.  The
+predicate @racket[quotable?] controls whether values of this type can be
+included in @racket[quote] expressions; generally opaque values such as
+procedures should not be considered quotable.  The flag @racket[try-quote?]
+controls whether the conversion function prefers to use @racket[quote] for
+values of this type; generally self-quoting values can use @racket[#false] for
+@racket[try-quote?].
+}
+
+@defproc[
+(extend-expr-style [est expr-style?] [ext expr-style-extension?] ...
+  [#:after? after? boolean? #false])
+expr-style?
+]{
+Adds the given extensions to @racket[est].  Checks the new extensions before
+any existing extensions, unless @racket[after?] is true.
+}
+
+@defproc[
+(set-expr-style-default-convert
+  [est expr-style?]
+  [proc (or/c (-> any/c any/c) #false)])
+expr-style?
+]{
+Updates @racket[est] to use @racket[proc] to convert any value that has no
+specific extension.
+}
+
+@defparam[current-expr-style pst expr-style?]{
+Controls the expression style used by @racket[stylish-expr] and related
+procedures if none is given explicitly.  Defaults to
+@racket[default-expr-style].
 }
 
 @defform[(with-stylish-port body ...+)]{
