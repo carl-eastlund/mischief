@@ -2,6 +2,7 @@
 
 (provide
   define/debug
+  define-values/debug
   lambda/debug
   case-lambda/debug
   #%app/debug
@@ -9,9 +10,9 @@
   debug*
   debug-value
   debug-values
+  debug-exception
   dprintf
   stylish-dprintf
-  call-with-debug-frame
   call-and-debug)
 
 (require
@@ -21,6 +22,9 @@
 
 (define-syntax define/debug
   (make-rename-transformer #'define))
+
+(define-syntax define-values/debug
+  (make-rename-transformer #'define-values))
 
 (define-syntax lambda/debug
   (make-rename-transformer #'lambda))

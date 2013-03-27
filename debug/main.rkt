@@ -10,9 +10,9 @@
   debug*
   debug-value
   debug-values
+  debug-exception
   dprintf
   stylish-dprintf
-  call-with-debug-frame
   call-and-debug)
 
 (require
