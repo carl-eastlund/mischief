@@ -188,6 +188,12 @@ The @racketmodname[mischief] library combines
 @require[(for-label mischief/visitor)]
 @defmodule[mischief/visitor]
 
+@section[#:style '(toc)]{Scribble and Documentation}
+
+@subsection{examples}
+@require[(for-label mischief/examples)]
+@defmodule[mischief/examples]
+
 @section[#:style '(toc)]{Web Content}
 
 @subsection{web}
