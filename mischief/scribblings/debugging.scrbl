@@ -14,7 +14,7 @@ that automatically add debugging to primitive forms.  The
 turning debugging on or off simply means replacing @racket[(require debug)]
 with @racket[(require no-debug)] or vice-versa.
 
-@examples/evaluator[racket #:requires [debug]
+@examples/evaluator[mischief #:requires [debug]
 (define/debug (sum xs)
   (debug* cond
     [(empty? (rest xs)) (first xs)]

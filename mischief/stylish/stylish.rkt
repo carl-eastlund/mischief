@@ -71,7 +71,8 @@
   (log-debugf "Print:\n~e\n" e)
   (print-to-stylish-port 'stylish-print port left right columns
     (lambda (port)
-      (print-expression 'stylish-print e pst port))))
+      (print-expression 'stylish-print e pst port)
+      (void))))
 
 (define (stylish-println v [port (current-output-port)]
           #:expr-style [est (current-expr-style)]

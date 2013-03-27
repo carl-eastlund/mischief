@@ -1,8 +1,32 @@
 #lang scribble/manual
 
+@(require mischief/examples)
+
 @title{stylish}
 @require[(for-label mischief/stylish)]
 @defmodule[mischief/stylish]
+
+The @racketmodname[mischief/stylish] collection defines "stylish" printing as
+an alternative to "pretty" printing from @racketmodname[racket/pretty].
+Stylish printing uses more uniform formatting by default, is easier to
+customize, and supports @racket[printf]-style formatted printing.
+
+@examples/evaluator[mischief
+(define x
+  (list
+    (list 1 2 3)
+    (vector 4 5 6)
+    (quote-syntax (7 8 9))))
+(stylish-printf #:columns 20
+  "We can print inputs as values [~v] and expressions [~s]."
+  x
+  x)
+(stylish-print x #:columns 20)
+(stylish-print-expr x #:columns 20)
+(stylish-value->expr x)
+]
+
+@section{Rendering Values Converted To Expressions}
 
 @defproc[
 (stylish-print [x any/c]
@@ -62,6 +86,8 @@ combining @racket[get-output-string], @racket[stylish-print], and
 @racket[open-output-string].
 }
 
+@section{Rendering Values Without Conversion}
+
 @defproc[
 (stylish-print-expr [x any/c]
   [port output-port? (current-output-port)]
@@ -107,6 +133,8 @@ Renders @racket[x] as a string.  As @racket[stylish-value->string], assuming
 @racket[x] has already been converted to an expression.
 }
 
+@section{Converting Values To Expressions}
+
 @defproc[
 (stylish-value->expr [x any/c]
   [est expr-style? (current-expr-style)])
@@ -123,6 +151,8 @@ boolean?
 Reports whether @racket[x] can be @racket[quote]d to convert it to an
 expression according to @racket[est].
 }
+
+@section{Rendering Values Using Format Strings}
 
 @defproc[
 (stylish-printf [fmt string?] [arg any/c] ...
@@ -161,6 +191,18 @@ a string, @racket[stylish-format] renders the output of @racket[stylish-printf]
 as a string.
 }
 
+@section{Custom Stylish Printing}
+
+@defparam[
+current-stylish-print-columns
+cols
+(or/c exact-nonnegative-integer? 'infinity)
+]{
+Controls the number of columns used for breaking lines and indenting by
+@racket[stylish-print] and related procedures, when no explicit number of
+columns is given.
+}
+
 @defproc[
 (call-with-stylish-port
   [port output-port?]
@@ -193,15 +235,7 @@ Otherwise, the separator prints a single space if @racket[wide?] is true and
 prints nothing if @racket[wide?] is false.
 }
 
-@defparam[
-current-stylish-print-columns
-cols
-(or/c exact-nonnegative-integer? 'infinity)
-]{
-Controls the number of columns used for breaking lines and indenting by
-@racket[stylish-print] and related procedures, when no explicit number of
-columns is given.
-}
+@subsection{Print Styles}
 
 @defproc[(print-style? [x any/c]) boolean?]{
 Recognizes print styles, which control the way stylish-printing renders
@@ -260,6 +294,8 @@ specific extension.
 Controls the print style used by @racket[stylish-print] and related procedures
 if none is given explicitly.  Defaults to @racket[default-print-style].
 }
+
+@subsection{Expression Styles}
 
 @defproc[(expr-style? [x any/c]) boolean?]{
 Recognizes expression styles, which control the way values are converted to
@@ -337,6 +373,8 @@ Equivalent to:
        (parameterize {[current-output-port port]}
          body ...))))
 }
+
+@subsection{Special Expression Types}
 
 @defstruct*[stylish-comment-expr ((comment string?) (expr any/c))]{
 Represents an @racket[expr]ession annotated with a @racket[comment].
