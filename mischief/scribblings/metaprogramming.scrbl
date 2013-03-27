@@ -60,9 +60,7 @@ interface to the @seclink["top" #:doc '(lib
 
 ]
 
-@section{shorthand}
-@require[(for-label mischief/shorthand)]
-@defmodule[mischief/shorthand]
+@include-section["metaprogramming-simple.scrbl"]
 
 @section{transform}
 @require[(for-label mischief/transform)]

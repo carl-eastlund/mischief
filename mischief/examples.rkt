@@ -12,23 +12,31 @@
 
 (define-syntax (define-example-evaluator stx)
   (syntax-parse stx
-    [(_ name:id lang:module-path spec:module-path ...)
+    [(_ name:id lang:module-path
+        (~or spec:module-path
+          ({~literal for-syntax} phase-1-spec:module-path))
+        ...)
      #'(begin
-         (require (for-label lang spec ...))
+         (require (for-label lang spec ... (for-syntax phase-1-spec ...)))
          (define name
            (make-example-evaluator 'lang
-             #:requires '[spec ...])))]))
+             #:requires '[spec ... (for-syntax phase-1-spec) ...])))]))
 
 (define-syntax (examples/evaluator stx)
   (syntax-parse stx
     [(_ lang:module-path
-        (~optional (~seq #:requires [spec:module-path ...])
-          #:defaults {[(spec 1) empty]})
+        (~optional
+          (~seq #:requires
+            [(~or spec:module-path
+               ({~literal for-syntax} phase-1-spec:module-path))
+             ...])
+          #:defaults {[(spec 1) empty] [(phase-1-spec 1) empty]})
         body:expr ...+)
      #'(begin
-         (require (for-label lang spec ...))
+         (require (for-label lang spec ... (for-syntax phase-1-spec ...)))
          (examples
-           #:eval (make-example-evaluator 'lang #:requires '[spec ...])
+           #:eval (make-example-evaluator 'lang
+                    #:requires '[spec ... (for-syntax phase-1-spec) ...])
            body ...))]))
 
 (define make-example-evaluator
