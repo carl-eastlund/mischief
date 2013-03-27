@@ -54,7 +54,8 @@ properties that are normally discarded by compilation.}
 
 @item{
 For debugging macros, @racketmodname[mischief/stepper] gives a programmatic
-interface to the @other-doc['(lib "macro-debugger/macro-debugger.scrbl")].
+interface to the @seclink["top" #:doc '(lib
+"macro-debugger/macro-debugger.scrbl")]{Macro Stepper}.
 }
 
 ]
