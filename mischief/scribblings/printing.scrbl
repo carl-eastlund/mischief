@@ -75,6 +75,79 @@ Produces a readable phrase describing the quantity of something.
 ]
 }
 
-@section{error}
+@section{@racketmodname[mischief/error]: Reporting Errors}
 @require[(for-label mischief/error)]
 @defmodule[mischief/error]
+
+@(define-example-evaluator error-eval mischief)
+
+@defidform[impossible]{
+Use in code that @emph{should} be impossible to reach.  Reports an error
+message including its source location.  If applied as a function to arguments,
+those are included in the error message.
+
+@examples[#:eval error-eval
+(define (sum xs)
+  (match xs
+    [(list x) x]
+    [(cons x xs) (+ x (sum xs))]
+    [_ impossible]))
+(sum (list 1 2 3 4))
+(sum (list))
+(define (prod xs)
+  (match xs
+    [(list x) x]
+    [(cons x xs) (* x (prod xs))]
+    [_ (impossible xs)]))
+(prod (list 1 2 3 4))
+(prod (list))
+]
+}
+
+@defproc[
+(format-application
+  [proc any/c]
+  [arg any/c] ...
+  [#:<any-keyword> kw-arg any/c] ...)
+string?
+]{
+Produces a string representing the application of @racket[proc] to the supplied
+set of positional and keyword arguments.
+
+@examples[#:eval error-eval
+(format-application sort
+  '(cat hat sat bat)
+  string<?
+  #:key symbol->string)
+]
+}
+
+@defproc[
+(format-values [arg any/c] ...)
+string?
+]{
+Produces a string representing an expression that returns the @racket[arg]s as
+multiple values, or just the singular @racket[arg] if only one is given.
+
+@examples[#:eval error-eval
+(format-values 1 2 3)
+(format-values 1 2)
+(format-values 1)
+(format-values)
+]
+}
+
+@defproc[
+(format-exception [x any/c])
+string?
+]{
+Produces a string representing an expression that @racket[raise]s @racket[x] as
+an exception.
+
+@examples[#:eval error-eval
+(format-exception
+  (exn:fail:contract "Epic fail!"
+  (current-continuation-marks)))
+(format-exception 'not-an-exception)
+]
+}

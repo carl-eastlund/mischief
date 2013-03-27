@@ -17,12 +17,23 @@
   mischief/location)
 
 (define-syntax impossible
-  (id-transformer
-    (syntax-parser
-      [self:id
-       #'(make-impossible
-           (quote self)
-           (quote-srcloc/smart self))])))
+  (syntax-parser
+    [self:id
+     #'(report-impossible 'self (quote-srcloc/smart self))]
+    [(self:id (~or arg:expr (~seq key:keyword val:expr)) ...)
+     (define/syntax-parse {[key/val ...] ...} #'{[key val] ...})
+     #'(report-impossible 'self (quote-srcloc/smart self)
+         (format-application 'self arg ... key/val ... ...))]))
+
+(define (report-impossible name loc [expr #false])
+  (error name
+    "internal error~a; should never be called~a"
+    (if (source-location-known? loc)
+      (format " at ~a" (source-location->string loc))
+      "")
+    (if expr
+      (format ": ~a" expr)
+      "")))
 
 (define (make-impossible name loc)
   (define/keywords (proc ks vs . xs)
