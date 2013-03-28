@@ -20,13 +20,9 @@ Produces the values returned by the expression @racket[e] as a list.
 
 @include-section["for.scrbl"]
 
-@section{memoize}
-@require[(for-label mischief/memoize)]
-@defmodule[mischief/memoize]
+@include-section["memoize.scrbl"]
 
-@section{fold}
-@require[(for-label mischief/fold)]
-@defmodule[mischief/fold]
+@include-section["fold.scrbl"]
 
 @section{visitor}
 @require[(for-label mischief/visitor)]

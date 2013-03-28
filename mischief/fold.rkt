@@ -1,7 +1,16 @@
 #lang racket/base
 
 (provide
-  datum-fold)
+  datum-fold
+  default-fold-short-circuit
+  default-fold-list
+  default-fold-list*
+  default-fold-vector
+  default-fold-box
+  default-fold-prefab
+  default-fold-hash
+  default-fold-syntax
+  default-fold-other)
 
 (require
   racket/promise
@@ -9,62 +18,62 @@
   mischief/function)
 
 (define (datum-fold x
-          #:short-circuit [process-short-circuit default-process-short-circuit]
-          #:list [process-list default-process-list]
-          #:list* [process-list* default-process-list*]
-          #:vector [process-vector default-process-vector]
-          #:box [process-box default-process-box]
-          #:prefab [process-prefab default-process-prefab]
-          #:hash [process-hash default-process-hash]
-          #:hash-eq [process-hash-eq (arg+ process-hash (hasheq))]
-          #:hash-eqv [process-hash-eqv (arg+ process-hash (hasheqv))]
-          #:hash-equal [process-hash-equal (arg+ process-hash (hash))]
-          #:syntax [process-syntax default-process-syntax]
-          #:other [process-other default-process-other])
+          #:short-circuit [fold-short-circuit default-fold-short-circuit]
+          #:list [fold-list default-fold-list]
+          #:list* [fold-list* default-fold-list*]
+          #:vector [fold-vector default-fold-vector]
+          #:box [fold-box default-fold-box]
+          #:prefab [fold-prefab default-fold-prefab]
+          #:hash [fold-hash default-fold-hash]
+          #:hash-eq [fold-hash-eq (arg+ fold-hash (hasheq))]
+          #:hash-eqv [fold-hash-eqv (arg+ fold-hash (hasheqv))]
+          #:hash-equal [fold-hash-equal (arg+ fold-hash (hash))]
+          #:syntax [fold-syntax default-fold-syntax]
+          #:other [fold-other default-fold-other])
 
   (define (outer-loop x)
     (define p (delay (inner-loop x)))
-    (process-short-circuit x (lambda () (force p))))
+    (fold-short-circuit x (lambda () (force p))))
 
   (define (inner-loop x)
     (cond
-      [(list? x) (process-list (map outer-loop x))]
+      [(list? x) (fold-list (map outer-loop x))]
       [(pair? x)
        (let loop {[x x] [xs null]}
          (if (pair? x)
            (loop (cdr x) (cons (outer-loop (car x)) xs))
-           (process-list* (reverse xs) (outer-loop x))))]
+           (fold-list* (reverse xs) (outer-loop x))))]
       [(vector? x)
-       (process-vector
+       (fold-vector
          (for/list {[y (in-vector x)]}
            (outer-loop y)))]
-      [(box? x) (process-box (outer-loop (unbox x)))]
+      [(box? x) (fold-box (outer-loop (unbox x)))]
       [(prefab-struct-key x) =>
        (lambda (key)
-         (process-prefab key
+         (fold-prefab key
            (map outer-loop
              (cdr (vector->list (struct->vector x))))))]
       [(hash? x)
        (define/for/lists {ks vs} {[(k v) (in-hash x)]}
          (values k (outer-loop v)))
        (cond
-         [(hash-eq? x) (process-hash-eq ks vs)]
-         [(hash-eqv? x) (process-hash-eqv ks vs)]
-         [(hash-equal? x) (process-hash-equal ks vs)])]
+         [(hash-eq? x) (fold-hash-eq ks vs)]
+         [(hash-eqv? x) (fold-hash-eqv ks vs)]
+         [(hash-equal? x) (fold-hash-equal ks vs)])]
       [(syntax? x)
-       (process-syntax
+       (fold-syntax
          (datum->syntax x (gensym) x x x)
          (outer-loop (syntax-e x)))]
-      [else (process-other x)]))
+      [else (fold-other outer-loop x)]))
 
   (outer-loop x))
 
-(define (default-process-short-circuit x f) (f))
-(define (default-process-list xs) xs)
-(define (default-process-list* xs y) (append xs y))
-(define (default-process-vector xs) (list->vector xs))
-(define (default-process-box x) (box x))
-(define (default-process-prefab k vs) (apply make-prefab-struct k vs))
-(define (default-process-hash ht ks vs) (foldl hash-set ht ks vs))
-(define (default-process-syntax stx v) (datum->syntax stx v stx stx stx))
-(define (default-process-other x) x)
+(define (default-fold-short-circuit x f) (f))
+(define (default-fold-list xs) xs)
+(define (default-fold-list* xs y) (append xs y))
+(define (default-fold-vector xs) (list->vector xs))
+(define (default-fold-box x) (box x))
+(define (default-fold-prefab k vs) (apply make-prefab-struct k vs))
+(define (default-fold-hash ht ks vs) (foldl hash-set ht ks vs))
+(define (default-fold-syntax stx v) (datum->syntax stx v stx stx stx))
+(define (default-fold-other f x) x)
