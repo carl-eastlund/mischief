@@ -61,25 +61,7 @@ interface to the @seclink["top" #:doc '(lib
 
 @include-section["metaprogramming-moderate.scrbl"]
 
-@section{scope}
-@require[(for-label mischief/scope)]
-@defmodule[mischief/scope]
-
-@section{dye-pack}
-@require[(for-label mischief/dye-pack)]
-@defmodule[mischief/dye-pack]
-
-@section{id-table}
-@require[(for-label mischief/id-table)]
-@defmodule[mischief/id-table]
-
-@section{kernel-syntax}
-@require[(for-label mischief/kernel-syntax)]
-@defmodule[mischief/kernel-syntax]
-
-@section{preserve-expensive-metadata}
-@require[(for-label mischief/preserve-expensive-metadata)]
-@defmodule[mischief/preserve-expensive-metadata]
+@include-section["metaprogramming-complex.scrbl"]
 
 @section{stepper}
 @require[(for-label mischief/stepper)]

@@ -38,7 +38,7 @@
     [scope-bind-values! (->* {(listof identifier?)} {#:scope scope?} void?)]
     [scope-bind-syntax! (->* {identifier? any/c} {#:scope scope?} void?)]
     [scope-bind-syntaxes!
-     (->* {(listof identifier?) any/c} {#:scope scope?} void?)]
+     (->* {(listof identifier?) list?} {#:scope scope?} void?)]
     [scope-bind-syntax/eval! (->* {identifier? syntax?} {#:scope scope?} void?)]
     [scope-bind-syntaxes/eval!
      (->* {(listof identifier?) syntax?} {#:scope scope?} void?)]
