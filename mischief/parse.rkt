@@ -117,7 +117,7 @@
   (pattern (~not (~or _:id _:keyword (_ . _)))))
 
 (define-syntax-class formals
-  (pattern (arg-id:id ... . (~or rest-id?:id ()))
+  (pattern (arg-id:id ... . (~and rest (~or rest-id?:id ())))
     #:attr [rest-id 1]
     (cond
       [(attribute rest-id?) => list]

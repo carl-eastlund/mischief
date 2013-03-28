@@ -39,12 +39,15 @@ Produces a contract that accepts syntax matched by any of the patterns
 @defidform[formals]{
 
 A syntax class that parses formal arguments as used by @racket[#%plain-lambda]
-and @racket[case-lambda].  The class has five attributes: @racketid[arg-id],
-@racketid[rest-id?], @racketid[rest-id], @racketid[formal-id], and
-@racketid[call].
+and @racket[case-lambda].  The class has 6 attributes: @racketid[arg-id],
+@racketid[rest], @racketid[rest-id?], @racketid[rest-id], @racketid[formal-id],
+and @racketid[call].
 
 The attribute @racketid[arg-id] has a depth of 1 and contains all the
 positional, non-rest formal argument identifiers.
+
+The attribute @racketid[rest] has a depth of 0 and contains the tail of the
+(possibly improper) list of arguments: either a rest argument or @racket[()].
 
 The attribute @racketid[rest-id?] has a depth of 0 and contains the rest
 argument identifier if one is present, or @racket[#false] otherwise.
@@ -66,6 +69,39 @@ if @racketid[rest-id] is empty and @racket[apply] otherwise.
 (recursive #'(define (print x port) ---etc---))
 (recursive #'(define (printf fmt . args) ---etc---))
 ]
+}
+
+@defidform[kw-formals]{
+
+A syntax class that parses formal arguments including keyword arguments and
+optional arguments as used by @racket[lambda] and @racket[define].  The class
+has 13 attributes: @racketid[req-id], @racketid[opt-id], @racketid[opt-expr],
+@racketid[req-kw], @racketid[req-kw-id], @racketid[opt-kw],
+@racketid[opt-kw-id], @racketid[opt-kw-expr], @racketid[rest],
+@racketid[rest-id?], @racketid[rest-id], @racketid[formal-id], and
+@racketid[call].
+
+@parse-examples[
+(syntax-parse
+  '{a b [c "one"] [d "two"] #:w e #:x f #:y [g "three"] #:z [h "four"] . i}
+  [args:kw-formals
+   (stylish-println
+     (list
+       (|@| args.req-id)
+       (|@| args.opt-id)
+       (|@| args.opt-expr)
+       (|@| args.req-kw)
+       (|@| args.req-kw-id)
+       (|@| args.opt-kw)
+       (|@| args.opt-kw-id)
+       (|@| args.opt-kw-expr)
+       (|@| args.rest)
+       (|@| args.rest-id?)
+       (|@| args.rest-id)
+       (|@| args.formal-id)
+       (|@| args.call)))])
+]
+
 }
 
 @section{Literal Sets}
