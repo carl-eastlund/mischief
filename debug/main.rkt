@@ -22,7 +22,6 @@
     syntax/parse
     syntax/srcloc
     mischief/boolean
-    mischief/srcloc
     mischief/parse)
   racket/match
   racket/function

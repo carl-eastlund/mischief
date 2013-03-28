@@ -15,10 +15,10 @@
   racket/function)
 
 (define (dict->procedure dict
-          #:failure [default
-                     (lambda {key}
-                       (dict-key-not-found-error
-                         'dict->procedure dict key))])
+          #:failure
+          [default
+           (lambda {key}
+             (dict-key-not-found-error 'dict->procedure dict key))])
   (lambda {key}
     (dict-ref dict key
       (lambda {}
@@ -26,10 +26,10 @@
 
 (define (dict-ref? dict key
           #:success [success identity]
-          #:failure [default
-                     (lambda ()
-                       (dict-key-not-found-error
-                         'dict-ref? dict key))])
+          #:failure
+          [default
+           (lambda {}
+             (dict-key-not-found-error 'dict-ref? dict key))])
   (define result
     (let/ec return
       (define value
@@ -41,10 +41,10 @@
 (define (dict-update? dict key
           #:transform [f identity]
           #:success [success identity]
-          #:failure [default
-                     (lambda ()
-                       (dict-key-not-found-error
-                         'dict-update? dict key))])
+          #:failure
+          [default
+           (lambda {}
+             (dict-key-not-found-error 'dict-update? dict key))])
   ;; Using dict-update directly in case its implementation
   ;; ever improves to traverse keys only once.
   ;; Otherwise this would be easier with ref and set.
@@ -53,28 +53,28 @@
       (define value
         (match value/placeholder
           [(placeholder contents) contents]
-          [value value]))
+          [value (success value)]))
       (f value))
-    (lambda ()
-      (placeholder
-        (invoke default)))))
+    (lambda () (placeholder (invoke default)))))
 
 (struct placeholder [contents])
 
 (define (dict-add base
-          #:combine [combine #false]
+          #:combine
+          [combine #false]
           #:combine/key
-          [combine/key
-           (if combine
-             (lambda (k v1 v2) (combine v1 v2))
-             (lambda (k v1 v2) (dict-key-multiple-values-error base k v1 v2)))]
+          [combine/key (and combine (lambda {k v1 v2} (combine v1 v2)))]
           . dicts)
   (for*/fold
       {[base base]}
       {[dict (in-list dicts)]
        [(key value) (in-dict dict)]}
     (dict-update? base key
-      #:success (lambda (other) (combine/key key other value))
+      #:success
+      (lambda (other)
+        (if combine/key
+          (combine/key key other value)
+          (dict-key-multiple-values-error base key value other)))
       #:failure (lambda () value))))
 
 (define (dict-subtract base . dicts)
@@ -108,8 +108,8 @@
 (define (dict-key-not-found-error name dict key)
   (error name
     "key ~v not found in dict ~v"
-    dict
-    key))
+    key
+    dict))
 
 (define (dict-key-multiple-values-error name dict key . vs)
   (error name

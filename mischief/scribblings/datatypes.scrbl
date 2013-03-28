@@ -561,18 +561,234 @@ Produces a list of the values of @racket[x]'s fields.
 
 }
 
-@section{dict}
+@section[#:tag "dict"]{@racketmodname[mischief/dict]: Dictionaries}
 
 @defmodule[mischief/dict]
 
-@section{maybe}
+@defproc[
+(dict-ref? [dict dict?] [key any/c]
+  [#:success success (-> any/c any) identity]
+  [#:failure failure any/c
+   (lambda {}
+     (error 'dict-ref? "key ~v not found in dict ~v" key dict))])
+any
+]{
+
+Looks up @racket[key] in @racket[dict].  If @racket[dict] has a mapping for
+@racket[key], calls @racket[success] with the associated value.  Otherwise,
+invokes @racket[failure] if it is a procedure, and returns it otherwise.
+
+@data-examples[
+(define (search table name)
+  (dict-ref? table name
+    #:failure (lambda {} (gensym name))
+    #:success (lambda {id} (search table id))))
+(define table (hash 'y 'x))
+(search table 'x)
+(search table 'y)
+(search table 'z)
+]
+
+}
+
+@defproc[
+(dict-update? [dict dict?] [key any/c]
+  [#:transform proc (-> any/c any/c)]
+  [#:success success (-> any/c any/c) identity]
+  [#:failure failure any/c
+   (lambda {}
+     (error 'dict-update? "key ~v not found in dict ~v" key dict))])
+dict?
+]{
+
+Updates the value for @racket[key] in @racket[dict].  If @racket[key] is bound
+to some value @racket[x] in @racket[dict], updates the binding to
+@racket[(proc (success x))].  Otherwise, binds @racket[key] to
+@racket[(proc (failure))] if @racket[failure] is a procedure, and
+@racket[(proc failure)] otherwise.
+
+@data-examples[
+(define (insert key val table)
+  (dict-update? table key
+    #:transform (lambda {vals} (cons val vals))
+    #:success (lambda {vals} (remove val vals))
+    #:failure (lambda {} '())))
+(define table
+  (hash 'a '(x y z)))
+(insert 'a 'z
+  (insert 'b 'x
+    table))
+]
+
+}
+
+@defproc[
+(dict-add [d0 dict?] [d dict?] ...
+  [#:combine combine (or/c #false (-> any/c any/c any/c)) #false]
+  [#:combine/key combine/key (or/c #false (-> any/c any/c any/c any/c))
+   (if combine
+     (lambda {k v1 v2} (combine v1 v2))
+     #false)])
+dict?
+]{
+
+Adds the bindings in each @racket[d] to @racket[d0].  When one key @racket[k]
+has two values @racket[v1] and @racket[v2], binds @racket[k] to
+@racket[(combine/key k v1 v2)] in the result.
+
+@data-examples[
+(dict-add (hasheq 'a 'b) (hash 'x 'y))
+]
+
+}
+
+@defproc[
+(dict-subtract [d0 dict?] [d dict?] ...)
+dict?
+]{
+
+Removes the bindings for the keys in each @racket[d] from @racket[d0], if they
+exist.
+
+@data-examples[
+(dict-subtract (hasheq 'a 1 'b 2 'c 3) (hash 'a "team" 'b "hive"))
+]
+
+}
+
+@defproc[
+(dict-set-all [d dict?] [#:value value any/c] [seq sequence?] ...)
+dict?
+]{
+
+Binds every value @racket[x] from each sequence @racket[seq] in @racket[d] to
+@racket[(value x)] if @racket[x] is a procedure, and to @racket[x] otherwise.
+
+@data-examples[
+(dict-set-all (hash) #:value symbol->string '(a b c))
+]
+
+}
+
+@defproc[
+(dict-remove-all [d dict?] [seq sequence?] ...)
+dict?
+]{
+
+Removes every value @racket[x] in each sequence @racket[seq] from @racket[d].
+
+@data-examples[
+(dict-remove-all (hash 'a 1 'b 2 'c 3) '(a b))
+]
+
+}
+
+@defproc[
+(dict->procedure [dict dict?]
+  [#:failure failure any/c
+   (lambda {key}
+     (error 'dict->procedure "key ~v not found in dict ~v" key dict))])
+(-> any/c any)
+]{
+
+Returns a procedure that looks up its argument in @racket[dict] and returns the
+associated value.  If a key @racket[k] is not found, calls @racket[(failure k)]
+if it is a procedure and returns @racket[failure] otherwise.
+
+@data-examples[
+(define lookup (dict->procedure (hash 'a 1 'b 2 'c 3) #:failure 0))
+(lookup 'a)
+(lookup 'x)
+]
+
+}
+
+@section[#:tag "maybe"]{@racketmodname[mischief/maybe]: Optional Values}
 
 @defmodule[mischief/maybe]
 
-@section{quotation}
+@defstruct*[yes ([value any/c]) #:transparent]{
+
+A struct that can be used for optional values that can include @racket[#false].
+
+}
+
+@defproc[(no? [x any/c]) boolean?]{
+
+Equivalent to @racket[(false? x)].
+
+}
+
+@defproc[(no) #false]{
+
+Returns @racket[#false].
+
+}
+
+@defproc[(maybe? [x any/c]) boolean?]{
+
+Equivalent to @racket[(or (yes? x) (no? x))].
+
+}
+
+@section[#:tag "quotation"]{@racketmodname[mischief/quotation]:
+Quoting Values as S-expressions}
 
 @defmodule[mischief/quotation]
 
-@section{sort}
+@defproc[
+(quotation [x any/c]
+  [#:custom custom
+   (-> any/c (or/c (-> (-> any/c any/c) any/c any/c) #false))
+   (const #false)])
+any/c
+]{
+
+Produces an s-expression representing an expression that would evaluate to
+@racket[x].  Can be customized using @racketvalfont{#:custom}.  The procedure
+@racket[custom] is applied to values within @racket[x].  It is expected to
+return a procedure of two arguments for values it can quote, and
+@racket[#false] otherwise.  The two-argument procedure is applied to a
+recursive quoting procedure and the value to quote.
+
+@data-examples[
+(quotation (list (vector 1 2) (box "three")))
+(struct both [one two])
+(define (quote-both x)
+  (and (both? x) recursive-quote-both))
+(define (recursive-quote-both rec-quote b)
+  `(both
+     ,(rec-quote (both-one b))
+     ,(rec-quote (both-two b))))
+(quotation (both (list (both 1 2)) 3)
+  #:custom quote-both)
+]
+
+}
+
+@section[#:tag "sort"]{@racketmodname[mischief/sort]:
+Topological Sorting}
 
 @defmodule[mischief/sort]
+
+@defproc[
+(topological-sort [nodes list?] [neighbors (-> any/c list?)]
+  [#:cycle cycle (-> list? none/c)
+   (lambda {xs}
+     (error 'topological-sort "cycle detected: ~v" xs))])
+list?
+]{
+
+Topologically sorts the values in @racket[nodes], interpreted as a graph where
+each node's neighbors are determined by @racket[neighbors].  If a cycle is
+encountered, an error is raised using @racket[cycle].
+
+@data-examples[
+(define nodes '(a b c d))
+(define neighbors
+  (dict->procedure #:failure (const empty)
+    (hash 'a '(b c) 'b '(d) 'c '(d))))
+(topological-sort nodes neighbors)
+]
+
+}
