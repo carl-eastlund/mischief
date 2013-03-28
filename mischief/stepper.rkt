@@ -2,6 +2,7 @@
 
 (provide
   module-expansion-sexp
+  syntax-expansion-sexp
   (struct-out step)
   (struct-out misstep)
   (struct-out remarkstep)

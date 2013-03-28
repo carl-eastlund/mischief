@@ -63,6 +63,63 @@ interface to the @seclink["top" #:doc '(lib
 
 @include-section["metaprogramming-complex.scrbl"]
 
-@section{stepper}
-@require[(for-label mischief/stepper)]
+@section[#:tag "stepper"]{Debugging Macros with
+@racketmodname[mischief/stepper]}
+
 @defmodule[mischief/stepper]
+
+@require[(for-label mischief mischief/stepper)]
+
+@defproc[
+(module-expansion-step [mod module-path?])
+(vectorof (or/c step? misstep? remarkstep?))
+]{
+
+Produces the steps in the expansion of the module that @racket[mod] refers to.
+
+}
+
+@defproc[
+(syntax-expansion-step [stx syntax?])
+(vectorof (or/c step? misstep? remarkstep?))
+]{
+
+Produces the steps in the expansion of @racket[stx].
+
+}
+
+@deftogether[(
+@defstruct*[step ([type symbol?] [s1 state?] [s2 state?]) #:prefab]
+@defstruct*[misstep ([type symbol?] [s1 state?] [exn exn?]) #:prefab]
+@defstruct*[
+remarkstep
+([type symbol?]
+ [s1 state?]
+ [contents (listof (or/c string? syntax? 'arrow))])
+#:prefab
+]
+@defstruct*[
+state
+([e syntax?]
+ [foci (listof syntax?)]
+ [ctx syntax?]
+ [lctx (listof bigframe?)]
+ [binders (listof identifier?)]
+ [uses (listof identifier?)]
+ [frontier (listof syntax?)]
+ [seq (or/c exact-nonnegative-integer? #false)])
+#:prefab
+]
+@defstruct*[
+bigframe
+([ctx syntax?]
+ [foci (listof syntax?)]
+ [e syntax?])
+#:prefab
+]
+)]{
+
+Datatypes representing sequences of expansion steps parsed by the macro
+stepper.
+
+}
