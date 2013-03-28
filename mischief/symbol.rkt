@@ -37,21 +37,25 @@
       (symbol->string sym))))
 
 (define (symbol<? one two)
-  (string<?
-    (symbol->string one)
-    (symbol->string two)))
+  (and (not (eq? one two))
+    (string<?
+      (symbol->string one)
+      (symbol->string two))))
 
 (define (symbol>? one two)
-  (string>?
-    (symbol->string one)
-    (symbol->string two)))
+  (and (not (eq? one two))
+    (string>?
+      (symbol->string one)
+      (symbol->string two))))
 
 (define (symbol<=? one two)
-  (string<=?
-    (symbol->string one)
-    (symbol->string two)))
+  (or (eq? one two)
+    (string<=?
+      (symbol->string one)
+      (symbol->string two))))
 
 (define (symbol>=? one two)
-  (string>=?
-    (symbol->string one)
-    (symbol->string two)))
+  (or (eq? one two)
+    (string>=?
+      (symbol->string one)
+      (symbol->string two))))

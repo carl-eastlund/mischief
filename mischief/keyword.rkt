@@ -44,24 +44,25 @@
       (keyword->string sym))))
 
 (define (keyword=? one two)
-  (string=?
-    (keyword->string one)
-    (keyword->string two)))
+  (eq? one two))
 
 (define (keyword>? one two)
-  (string>?
-    (keyword->string one)
-    (keyword->string two)))
+  (and (not (eq? one two))
+    (string>?
+      (keyword->string one)
+      (keyword->string two))))
 
 (define (keyword<=? one two)
-  (string<=?
-    (keyword->string one)
-    (keyword->string two)))
+  (or (eq? one two)
+    (string<=?
+      (keyword->string one)
+      (keyword->string two))))
 
 (define (keyword>=? one two)
-  (string>=?
-    (keyword->string one)
-    (keyword->string two)))
+  (or (eq? one two)
+    (string>=?
+      (keyword->string one)
+      (keyword->string two))))
 
 (define (format-keyword fmt . args)
   (symbol->keyword (apply format-symbol fmt args)))

@@ -54,7 +54,7 @@ wrapping @racket[x] in @racket[quote].
 @section{Constructing Identifiers}
 
 @defproc[
-(fresh [x (or/c symbol? string? identifier?) 'fresh]
+(fresh [x (or/c symbol? string? identifier? keyword? char? number?) 'fresh]
   [#:source source source-location? (if (identifier? x) x #false)]
   [#:add-suffix? add-suffix? boolean? #true])
 identifier?
@@ -75,14 +75,15 @@ fresh-x
 }
 
 @defproc[
-(format-fresh [fmt string?] [arg (or/c symbol? string? identifier?)] ...
+(format-fresh [fmt string?]
+  [arg (or/c symbol? string? identifier? keyword? char? number?)] ...
   [#:source source source-location? #false]
   [#:add-suffix? add-suffix? boolean? #true])
 identifier?
 ]{
 Equivalent to:
 @racketblock[
-(fresh (format fmt arg ...)
+(fresh (format-symbol fmt arg ...)
   #:source source
   #:add-suffix? add-suffix?)
 ]

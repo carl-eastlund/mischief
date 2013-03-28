@@ -94,15 +94,25 @@
 (define (sort/unique elements <?
           #:key [key identity]
           #:cache-keys? [cache-keys? #f])
-  (let* {[elements (sort elements <? #:key key #:cache-keys? cache-keys?)]}
-    (if (empty? elements)
-      elements
-      (let loop {[elem (first elements)]
-                 [elements (rest elements)]}
-        (if (empty? elements)
-          (list elem)
-          (if (<? elem (first elements))
-            (cons elem
-              (loop (first elements)
-                (rest elements)))
-            (loop elem (rest elements))))))))
+  (cond
+    [cache-keys?
+     (map second
+       (sort/unique
+         (for/list {[x (in-list elements)]}
+           (list (key x) x))
+         <?
+         #:key first
+         #:cache-keys? #false))]
+    [else
+     (define sorted (sort elements <? #:key key #:cache-keys? #false))
+     (if (empty? sorted)
+       sorted
+       (let loop {[elem (first sorted)]
+                  [sorted (rest sorted)]}
+         (if (empty? sorted)
+           (list elem)
+           (if (<? (key elem) (key (first sorted)))
+             (cons elem
+               (loop (first sorted)
+                 (rest sorted)))
+             (loop elem (rest sorted))))))]))
