@@ -7,8 +7,8 @@
   self-quoting
   formals
   kw-formals
-  fold-clauses
-  fold-clause
+  for-clauses
+  for-body
   block-body
   temp-id
   datum-literal
@@ -151,14 +151,30 @@
       [(and (empty? (attribute req-kw)) (empty? (attribute opt-kw)) #'apply)]
       [else #'keyword-apply])))
 
-(define-syntax-class fold-clauses
-  (pattern {_:fold-clause ...}))
+(define-syntax-class for-clauses
+  #:attributes {}
+  (pattern {clause:for-clause ...}
+    #:fail-when
+    (check-duplicate-identifier (append* (@ clause.name)))
+    "duplicate identifier"))
 
-(define-splicing-syntax-class fold-clause
-  (pattern [_:id _:expr])
-  (pattern [(_:id ...) _:expr])
-  (pattern (~seq #:when _:expr))
-  (pattern (~seq #:unless _:expr)))
+(define-splicing-syntax-class for-clause
+  #:attributes {[name 1]}
+  (pattern [var:id _:expr] #:attr [name 1] (list (@ var)))
+  (pattern [(name:id ...) _:expr])
+  (pattern (~seq #:when _:expr) #:attr [name 1] '())
+  (pattern (~seq #:unless _:expr) #:attr [name 1] '())
+  (pattern _:break-clause #:attr [name 1] '()))
+
+(define-splicing-syntax-class break-clause
+  (pattern (~seq #:break _:expr))
+  (pattern (~seq #:final _:expr)))
+
+(define-syntax-class for-body
+  (pattern
+    ((~and (~seq head ...)
+       (~seq (~or _:break-clause _:expr) ...))
+     tail:expr)))
 
 (define-syntax-class block-body
   (pattern (_:expr ...+)))

@@ -116,83 +116,88 @@
 ;; Immutable Dictionaries
 
 (define-shorthand
-  (for/dict d0:expr clauses:fold-clauses . body:block-body)
+  (for/dict d0:expr clauses:for-clauses . body:for-body)
   (for/fold {[d d0]} clauses
-    (define-values {k v} (block . body))
+    body.head ...
+    (define-values {k v} body.tail)
     (dict-set d k v)))
 
 (define-shorthand
-  (for*/dict d0:expr clauses:fold-clauses . body:block-body)
+  (for*/dict d0:expr clauses:for-clauses . body:for-body)
   (for*/fold {[d d0]} clauses
-    (define-values {k v} (block . body))
+    body.head ...
+    (define-values {k v} body.tail)
     (dict-set d k v)))
 
 (define-shorthand
-  (for/dict! d0:expr clauses:fold-clauses . body:block-body)
+  (for/dict! d0:expr clauses:for-clauses . body:for-body)
   (let {[d d0]}
     (for clauses
-      (define-values {k v} (block . body))
+      body.head ...
+      (define-values {k v} body.tail)
       (dict-set! d k v))
     d))
 
 (define-shorthand
-  (for*/dict! d0:expr clauses:fold-clauses . body:block-body)
+  (for*/dict! d0:expr clauses:for-clauses . body:for-body)
   (let {[d d0]}
     (for* clauses
-      (define-values {k v} (block . body))
+      body.head ...
+      (define-values {k v} body.tail)
       (dict-set! d k v))
     d))
 
 (define-shorthand
-  (for/hash! clauses:fold-clauses . body:block-body)
+  (for/hash! clauses:for-clauses . body:for-body)
   (for/dict! (make-hash) clauses . body))
 
 (define-shorthand
-  (for*/hash! clauses:fold-clauses . body:block-body)
+  (for*/hash! clauses:for-clauses . body:for-body)
   (for*/dict! (make-hash) clauses . body))
 
 (define-shorthand
-  (for/hasheq! clauses:fold-clauses . body:block-body)
+  (for/hasheq! clauses:for-clauses . body:for-body)
   (for/dict! (make-hasheq) clauses . body))
 
 (define-shorthand
-  (for*/hasheq! clauses:fold-clauses . body:block-body)
+  (for*/hasheq! clauses:for-clauses . body:for-body)
   (for*/dict! (make-hasheq) clauses . body))
 
 (define-shorthand
-  (for/hasheqv! clauses:fold-clauses . body:block-body)
+  (for/hasheqv! clauses:for-clauses . body:for-body)
   (for/dict! (make-hasheqv) clauses . body))
 
 (define-shorthand
-  (for*/hasheqv! clauses:fold-clauses . body:block-body)
+  (for*/hasheqv! clauses:for-clauses . body:for-body)
   (for*/dict! (make-hasheqv) clauses . body))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Filter Lists
 
 (define-shorthand
-  (for/filter clauses:fold-clauses . body:block-body)
+  (for/filter clauses:for-clauses . body:for-body)
   (for/filter-lists {xs} clauses . body))
 
 (define-shorthand
-  (for*/filter clauses:fold-clauses . body:block-body)
+  (for*/filter clauses:for-clauses . body:for-body)
   (for*/filter-lists {xs} clauses . body))
 
 (define-derived-loops
-  (filter-lists {xs:id ...} clauses:fold-clauses . body:block-body)
+  (filter-lists {xs:id ...} clauses:for-clauses . body:for-body)
   (fold/filter-lists {} {xs ...} clauses . body))
 
 (define-loops
   (fold/filter-lists loop/fold
       {[(~and x:id x*:temp-id x**:temp-id) (~and e:expr e*:temp-id)] ...}
       {(~and ys:id ys*:temp-id y:temp-id rys:temp-id) ...}
-    clauses:fold-clauses . body:block-body)
+    clauses:for-clauses . body:for-body)
   {x ... ys ...}
   (let {[e*.temp e] ...}
     (block
       (define-values {x**.temp ... rys.temp ...}
         (loop/fold {[x e*.temp] ... [rys.temp '()] ...} clauses
-          (define-values {x*.temp ... y.temp ...} (block . body))
+          body.head ...
+          (define-values {x*.temp ... y.temp ...} body.tail)
           (values x*.temp ... (if y.temp (cons y.temp rys.temp) rys.temp) ...)))
       (define-values {ys*.temp ...}
         (values (reverse rys.temp) ...))
@@ -240,27 +245,28 @@
 ;; Append Lists
 
 (define-shorthand
-  (for/append clauses:fold-clauses . body:block-body)
+  (for/append clauses:for-clauses . body:for-body)
   (for/append-lists {xs} clauses . body))
 
 (define-shorthand
-  (for*/append clauses:fold-clauses . body:block-body)
+  (for*/append clauses:for-clauses . body:for-body)
   (for*/append-lists {xs} clauses . body))
 
 (define-derived-loops
-  (append-lists {xs:id ...} clauses:fold-clauses . body:block-body)
+  (append-lists {xs:id ...} clauses:for-clauses . body:for-body)
   (fold/append-lists {} {xs ...} clauses . body))
 
 (define-loops
   (fold/append-lists loop/fold
       {[(~and x:id x*:temp-id x**:temp-id) (~and e:expr e*:temp-id)] ...}
       {(~and ys:id ys*:temp-id ys**:temp-id ys0:temp-id ryss:temp-id) ...}
-    clauses:fold-clauses . body:block-body)
+    clauses:for-clauses . body:for-body)
   {x ... ys ...}
   (let {[e*.temp e] ...}
     (define-values {x**.temp ... ryss.temp ...}
       (loop/fold {[x e*.temp] ... [ryss.temp '()] ...} clauses
-        (define-values {x*.temp ... ys0.temp ...} (block . body))
+        body.head ...
+        (define-values {x*.temp ... ys0.temp ...} body.tail)
         (values x*.temp ... (cons ys0.temp ryss.temp) ...)))
     (define-values {ys*.temp ...}
       (values
@@ -309,19 +315,19 @@
 ;; Partition Lists
 
 (define-shorthand
-  (for/partition clauses:fold-clauses . body:block-body)
+  (for/partition clauses:for-clauses . body:for-body)
   (for/partition-lists {[yes no]} clauses . body))
 
 (define-shorthand
-  (for*/partition clauses:fold-clauses . body:block-body)
+  (for*/partition clauses:for-clauses . body:for-body)
   (for*/partition-lists {[yes no]} clauses . body))
 
 (define-shorthand
-  (define/for/partition {yes:id no:id} clauses:fold-clauses . body:block-body)
+  (define/for/partition {yes:id no:id} clauses:for-clauses . body:for-body)
   (define/for/partition-lists {[yes no]} clauses . body))
 
 (define-shorthand
-  (define/for*/partition {yes:id no:id} clauses:fold-clauses . body:block-body)
+  (define/for*/partition {yes:id no:id} clauses:for-clauses . body:for-body)
   (define/for*/partition-lists {[yes no]} clauses . body))
 
 (define-loops
@@ -330,14 +336,15 @@
          [(~and xs:id rxs:temp-id)
           (~and ys:id rys:temp-id)])
        ...}
-    clauses:fold-clauses . body:block-body)
+    clauses:for-clauses . body:for-body)
   {xs ... ys ...}
   (block
     (define-values {rxs.temp rys.temp}
       (values '() '()))
     ...
     (loop/fold {} clauses
-      (define-values {then v.temp ...} (block . body))
+      body.head ...
+      (define-values {then v.temp ...} body.tail)
       (cond
         [then (set! rxs.temp (cons v.temp rxs.temp)) ...]
         [else (set! rys.temp (cons v.temp rys.temp)) ...])
@@ -368,28 +375,29 @@
 ;; Lists
 
 (define-shorthand
-  (define/for/lists {xs:id ...} clauses:fold-clauses . body:block-body)
+  (define/for/lists {xs:id ...} clauses:for-clauses . body:for-body)
   (define/for/list-values {xs ...} clauses . body))
 
 (define-shorthand
-  (define/for*/lists {xs:id ...} clauses:fold-clauses . body:block-body)
+  (define/for*/lists {xs:id ...} clauses:for-clauses . body:for-body)
   (define/for*/list-values {xs ...} clauses . body))
 
 (define-derived-loops
-  (list-values {xs:id ...} clauses:fold-clauses . body:block-body)
+  (list-values {xs:id ...} clauses:for-clauses . body:for-body)
   (fold/lists {} {xs ...} clauses . body))
 
 (define-loops
   (fold/lists loop/fold
       {[(~and x:id x*:temp-id x**:temp-id) (~and e:expr e*:temp-id)] ...}
       {(~and ys:id ys*:temp-id y:temp-id rys:temp-id) ...}
-    clauses:fold-clauses . body:block-body)
+    clauses:for-clauses . body:for-body)
   {x ... ys ...}
   (let {[e*.temp e] ...}
     (block
       (define-values {x**.temp ... rys.temp ...}
         (loop/fold {[x e*.temp] ... [rys.temp '()] ...} clauses
-          (define-values {x*.temp ... y.temp ...} (block . body))
+          body.head ...
+          (define-values {x*.temp ... y.temp ...} body.tail)
           (values x*.temp ... (cons y.temp rys.temp) ...)))
       (define-values {ys*.temp ...}
         (values (reverse rys.temp) ...))
@@ -415,16 +423,16 @@
 ;; Values
 
 (define-shorthand
-  (define/for/fold {[x:id e:expr] ...} clauses:fold-clauses . body:block-body)
+  (define/for/fold {[x:id e:expr] ...} clauses:for-clauses . body:for-body)
   (define/for/fold-values {[x e] ...} clauses . body))
 
 (define-shorthand
-  (define/for*/fold {[x:id e:expr] ...} clauses:fold-clauses . body:block-body)
+  (define/for*/fold {[x:id e:expr] ...} clauses:for-clauses . body:for-body)
   (define/for*/fold-values {[x e] ...} clauses . body))
 
 (define-loops
   (fold-values loop/fold {[x:id e:expr] ...}
-    clauses:fold-clauses . body:block-body)
+    clauses:for-clauses . body:for-body)
   {x ...}
   (loop/fold {[x e] ...} clauses . body))
 
