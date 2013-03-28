@@ -194,6 +194,12 @@ stops when it encounters any identifier in @racket[stop] or any identifier in
 @racket[(kernel-form-identifier-list)].  If @racket[stop] is @racket[#false],
 expansion does not stop, and recurs into subforms.
 
+@emph{Note:} the interpretation of @racket['()] and @racket[#false] in
+@racket[stop] are reversed from that used in the third argument to
+@racket[local-expand].  This change is intended to make the behavior of
+@racket[stop] more uniform: any list results in head-expansion, while
+@racket[#false] results in recursive expansion.
+
 }
 
 @defproc[

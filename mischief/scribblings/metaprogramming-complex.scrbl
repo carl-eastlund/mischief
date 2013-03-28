@@ -7,9 +7,7 @@ those that use @racket[local-expand].
 
 @include-section["scope.scrbl"]
 
-@section{dye-pack}
-@require[(for-label mischief/dye-pack)]
-@defmodule[mischief/dye-pack]
+@include-section["dye-pack.scrbl"]
 
 @section{id-table}
 @require[(for-label mischief/id-table)]

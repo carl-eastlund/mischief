@@ -1,11 +1,11 @@
 #lang racket/base
 
 (provide
-  define-module-code-inspector
-  call-with-disarmed-dye-packs
   with-disarmed-dye-packs
+  call-with-disarmed-dye-packs
+  rearm-dye-packs
   current-dye-packs
-  rearm-dye-packs)
+  module-code-inspector)
 
 (require
   (for-syntax
@@ -13,24 +13,20 @@
     syntax/parse)
   racket/block)
 
-(define-syntax (define-module-code-inspector stx)
+(define-syntax (module-code-inspector stx)
   (syntax-parse stx
-    [(_ name:id)
-     #'(define name
-         (variable-reference->module-declaration-inspector
-           (#%variable-reference)))]))
+    [(_) #'(variable-reference->module-declaration-inspector
+             (#%variable-reference))]))
 
 (define-syntax (with-disarmed-dye-packs stx)
   (syntax-parse stx
     [(_ name:id armed:expr body:expr ...)
-     #'(block
-         (define-module-code-inspector inspector)
-         (call-with-disarmed-dye-packs armed
-           #:inspector inspector
-           (lambda (name) body ...)))]))
+     #'(call-with-disarmed-dye-packs armed
+         #:inspector (module-code-inspector)
+         (lambda (name) body ...))]))
 
 (define current-dye-packs
-  (make-parameter #false))
+  (make-parameter (datum->syntax #false '())))
 
 (define (call-with-disarmed-dye-packs stx proc
           #:inspector [inspector #false])
