@@ -115,3 +115,74 @@ Loops for partitioning results into two categories.
 ]
 
 }
+
+@deftogether[(
+@defform[(for/fold/lists {[x e] ...} {y ...} for-clauses . for-body)]
+@defform[(for*/fold/lists {[x e] ...} {y ...} for-clauses . for-body)]
+@defform[(for/fold/filter-lists {[x e] ...} {y ...} for-clauses . for-body)]
+@defform[(for*/fold/filter-lists {[x e] ...} {y ...} for-clauses . for-body)]
+@defform[(for/fold/append-lists {[x e] ...} {y ...} for-clauses . for-body)]
+@defform[(for*/fold/append-lists {[x e] ...} {y ...} for-clauses . for-body)]
+)]{
+
+Loops that combine folded results with accumulated lists.
+
+@for-examples[
+(for/fold/lists
+    {[len 0]}
+    {syms}
+    {[str (in-list '("one" "two" "three"))]}
+  (values
+    (+ len (string-length str))
+    (string->symbol str)))
+(define table (hash 'a "apple" 'b "banana"))
+(for/fold/filter-lists
+    {[longest 0]}
+    {hits}
+    {[key (in-list '(a b c))]
+     #:when (dict-has-key? table key)}
+  (define str (dict-ref table key))
+  (values
+    (max longest (string-length str))
+    str))
+(for/fold/append-lists
+    {[count 0]}
+    {chars}
+    {[word (in-list '(cat a log))]}
+  (values
+    (add1 count)
+    (string->list (symbol->string word))))
+]
+
+}
+
+@deftogether[(
+@defform[(define/for/fold {[x e] ...} for-clauses . for-body)]
+@defform[(define/for*/fold {[x e] ...} for-clauses . for-body)]
+@defform[(define/for/fold/lists {[x e] ...} {y ...} for-clauses . for-body)]
+@defform[(define/for*/fold/lists {[x e] ...} {y ...} for-clauses . for-body)]
+@defform[(define/for/lists {x ...} for-clauses . for-body)]
+@defform[(define/for*/lists {x ...} for-clauses . for-body)]
+@defform[(define/for/filter-lists {x ...} for-clauses . for-body)]
+@defform[(define/for*/filter-lists {x ...} for-clauses . for-body)]
+@defform[(define/for/append-lists {x ...} for-clauses . for-body)]
+@defform[(define/for*/append-lists {x ...} for-clauses . for-body)]
+@defform[(define/for/partition {x y} for-clauses . for-body)]
+@defform[(define/for*/partition {x y} for-clauses . for-body)]
+@defform[(define/for/partition-lists {[x y] ...} for-clauses . for-body)]
+@defform[(define/for*/partition-lists {[x y] ...} for-clauses . for-body)]
+@defform[(define/for/fold/filter-lists {[x e] ...} {y ...} for-clauses . for-body)]
+@defform[(define/for*/fold/filter-lists {[x e] ...} {y ...} for-clauses . for-body)]
+@defform[(define/for/fold/append-lists {[x e] ...} {y ...} for-clauses . for-body)]
+@defform[(define/for*/fold/append-lists {[x e] ...} {y ...} for-clauses . for-body)]
+)]{
+
+Definitions based on loops.
+
+@for-examples[
+(define/for/fold {[vowels 0]} {[c (in-string "beautiful")]}
+  (+ vowels (if (memv c (list #\a #\e #\i #\o #\u)) 1 0)))
+vowels
+]
+
+}
