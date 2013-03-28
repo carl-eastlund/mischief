@@ -42,7 +42,7 @@
       (label-id-representative one)
       (label-id-representative two))))
 
-(define (label-identifier-hash-code id [rec eq-hash-code])
+(define (label-identifier-hash-code id [rec equal-hash-code])
   (rec (syntax-e id)))
 
 (define (make-immutable-label-id-table [init '()])

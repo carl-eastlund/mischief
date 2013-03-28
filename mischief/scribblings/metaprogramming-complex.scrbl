@@ -9,15 +9,19 @@ those that use @racket[local-expand].
 
 @include-section["dye-pack.scrbl"]
 
-@section{id-table}
-@require[(for-label mischief/id-table)]
-@defmodule[mischief/id-table]
+@include-section["id-table.scrbl"]
 
-@section{kernel-syntax}
-@require[(for-label mischief/kernel-syntax)]
-@defmodule[mischief/kernel-syntax]
+@include-section["kernel-syntax.scrbl"]
 
-@section{preserve-expensive-metadata}
+@section[#:tag "preserve-expensive-metadata"]{
+@racketmodname[mischief/preserve-expensive-metadata]:
+Compiled Syntax Objects with Source Locations and Syntax Properties}
 @require[(for-label mischief/preserve-expensive-metadata)]
 @defmodule[mischief/preserve-expensive-metadata]
 
+@defform[(quote-syntax/preserve-expensive-metadata e)]{
+
+Similar to @racket[(quote-syntax e)], but preserves the source location and
+syntax properties of the original syntax even when compiled.
+
+}
