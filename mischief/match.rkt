@@ -13,8 +13,8 @@
   racket/pretty
   racket/string
   mischief/function
-  mischief/location
-  syntax/srcloc)
+  syntax/srcloc
+  syntax/location)
 
 (struct exn:fail:match! exn:fail [inputs srclocs]
   #:property prop:exn:srclocs (eta exn:fail:match!-srclocs))
@@ -26,7 +26,7 @@
          [pat tem ...] ...
          [x (match!-error 'match!
               (list x)
-              (quote-srcloc/smart #,stx))])]))
+              (quote-srcloc #,stx))])]))
 
 (define-syntax (match*! stx)
   (syntax-parse stx
@@ -38,7 +38,7 @@
          [{pat ...} tem ...] ...
          [{x ...} (match!-error 'match*!
                     (list x ...)
-                    (quote-srcloc/smart #,stx))])]))
+                    (quote-srcloc #,stx))])]))
 
 (define (match!-error sym xs src)
   (raise

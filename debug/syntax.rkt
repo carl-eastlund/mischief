@@ -46,7 +46,7 @@
       [(source-location-known? stx)
        (list #'"~s [~a]"
          #'(quote e)
-         #'(source-location->string (quote-srcloc/smart e)))]
+         #'(source-location->string (quote-srcloc e)))]
       [else
        (list #'"~s"
          #'(quote e))]))

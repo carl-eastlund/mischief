@@ -27,12 +27,12 @@
   racket/match
   racket/function
   syntax/srcloc
+  syntax/location
   mischief/boolean
   mischief/error
   mischief/string
   mischief/function
   mischief/stylish
-  mischief/location
   no-debug/low-level)
 
 (define-syntax (debug stx)
@@ -71,7 +71,7 @@
        (list #'"~a~s [~a]"
          #`(quote #,prefix)
          #'(quote e)
-         #'(source-location->string (quote-srcloc/smart e)))]
+         #'(source-location->string (quote-srcloc e)))]
       [else
        (list #'"~a~s"
          #`(quote #,prefix)

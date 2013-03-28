@@ -13,16 +13,16 @@
     mischief/transform)
   racket/port
   syntax/srcloc
-  mischief/function
-  mischief/location)
+  syntax/location
+  mischief/function)
 
 (define-syntax impossible
   (syntax-parser
     [self:id
-     #'(report-impossible 'self (quote-srcloc/smart self))]
+     #'(report-impossible 'self (quote-srcloc self))]
     [(self:id (~or arg:expr (~seq key:keyword val:expr)) ...)
      (define/syntax-parse {[key/val ...] ...} #'{[key val] ...})
-     #'(report-impossible 'self (quote-srcloc/smart self)
+     #'(report-impossible 'self (quote-srcloc self)
          (format-application 'self arg ... key/val ... ...))]))
 
 (define (report-impossible name loc [expr #false])

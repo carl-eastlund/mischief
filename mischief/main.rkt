@@ -88,7 +88,5 @@
     mischief/dye-pack
     mischief/transform
     mischief/shorthand
-    mischief/srcloc
-    mischief/location
     mischief/fold
     mischief/id-table)

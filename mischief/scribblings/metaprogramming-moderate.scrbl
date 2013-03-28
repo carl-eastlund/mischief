@@ -8,11 +8,3 @@ kinds of macros that grow beyond simple one-liners.
 @include-section["transform.scrbl"]
 
 @include-section["parse.scrbl"]
-
-@section{srcloc}
-@require[(for-label mischief/srcloc)]
-@defmodule[mischief/srcloc]
-
-@section{location}
-@require[(for-label mischief/location)]
-@defmodule[mischief/location]

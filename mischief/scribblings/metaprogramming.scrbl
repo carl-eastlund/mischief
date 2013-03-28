@@ -13,18 +13,15 @@ There are a lot of different tools for writing macros in the
 forms.}
 
 @item{
-For writing macros of moderate complexity, there are several utilities:
+For writing macros of moderate complexity, there are two modules:
 @itemlist[
 
 @item{@racketmodname[mischief/transform] provides functions that operate on
-syntax objects;}
+syntax objects; and}
 
 @item{@racketmodname[mischief/parse] provides syntax classes and macros for use
-with @racket[syntax-parse]; and}
+with @racket[syntax-parse].}
 
-@item{@racketmodname[mischief/srcloc] and @racketmodname[mischief/location]
-provide macros and functions that refer to and manipulate the source location
-of syntax objects;}
 ]
 }
 
