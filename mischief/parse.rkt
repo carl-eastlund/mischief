@@ -2,28 +2,28 @@
 
 (provide
   @
+  syntax-matcher
+  syntax-matches?
   syntax-class/c
   syntax-parse/c
-  self-quoting
   formals
   kw-formals
   for-clauses
   for-body
   block-body
-  temp-id
+  self-quoting
   datum-literal
   literal
   module-path
+  temp-id
   bound-id
   static-id
   static-binding
-  struct-binding/check
-  struct-binding/known
   struct-binding
+  struct-binding/known
+  struct-binding/check
   define-literals/ids
-  require/define-literals/ids
-  syntax-matcher
-  syntax-matches?)
+  require/define-literals/ids)
 
 (require
   (for-syntax
@@ -191,12 +191,8 @@
     #:attr value (syntax->datum #'x)
     #:when (datum-pred (attribute value))))
 
-(define-syntax-class (literal v)
-  #:description (format "~s" v)
-  #:attributes {value}
-  (pattern x
-    #:attr value (syntax->datum #'x)
-    #:when (equal? (attribute value) v)))
+(define-syntax-class/specialize (literal v)
+  (datum-literal (lambda {x} (equal? x v)) (format "~s" v)))
 
 (define-syntax-class/specialize module-path
   (datum-literal module-path? "a module path"))
