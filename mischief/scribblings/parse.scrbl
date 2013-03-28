@@ -104,4 +104,45 @@ has 13 attributes: @racketid[req-id], @racketid[opt-id], @racketid[opt-expr],
 
 }
 
+@defidform[for-clauses]{
+Parses a sequence of clauses for a @racket[for]-like macro.  Has no attributes.
+
+@parse-examples[
+(define (f x)
+  (syntax-parse x
+    [c:for-clauses #'c]))
+(f #'{[(k v) (in-dict (hash))] #:when (eq? k v)})
+(f #'{[(k v) (in-dict (hash))] [k (in-naturals)]})
+(f #'{[(k v) (in-dict (hash))] #:else "something"})
+]
+
+See @racket[for-body] for a more practical example.
+}
+
+@defidform[for-body]{
+Parses the body of a @racket[for]-like macro.  Has two attributes:
+@racketid[head] and @racketid[tail]. The attribute @racketid[head] has a depth
+of 1 and contains the interleaved definitions, expressions, and break clauses
+that form most of the body.  The attribute @racketid[tail] has a depth of 0 and
+contains the final expression of the body.
+
+@parse-examples[
+(define-syntax (for/string-set! stx)
+  (syntax-parse stx
+    [(_ target:expr clauses:for-clauses . body:for-body)
+     #'(let {[s target]}
+         (for clauses
+           body.head ...
+           (define-values {i c} body.tail)
+           (string-set! s i c)))]))
+(define s (string-copy "fox"))
+(for/string-set! s
+    {[i (in-naturals)]
+     [c (in-string "abcdefghijklmnopqrstuvwxyz")]}
+  #:break (>= i (string-length s))
+  (values i c))
+s
+]
+}
+
 @section{Literal Sets}
