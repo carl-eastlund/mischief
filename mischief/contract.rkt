@@ -20,16 +20,17 @@
 (provide
   define-flat-rec-contract
   predicate/c)
-(provide/contract
-  [dict/c (-> contract? contract? contract?)]
-  [nat/c flat-contract?]
-  [type-predicate/c
-   (->*
-       {}
-       {contract?
-        #:strict? boolean?
-        #:super (or/c (-> any/c any/c) #false)}
-     contract?)])
+(provide
+  (contract-out
+    [dict/c (-> contract? contract? contract?)]
+    [nat/c flat-contract?]
+    [type-predicate/c
+     (->*
+         {}
+         {contract?
+          #:strict? boolean?
+          #:super (or/c (-> any/c any/c) #false)}
+       contract?)]))
 
 ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Dynamic Configuration

@@ -4,21 +4,21 @@
 
 @title[#:style '(toc)]{Functions and Flow Control}
 
-@section{function}
-@require[(for-label mischief/function)]
-@defmodule[mischief/function]
+@include-section["function.scrbl"]
 
-@section{contract}
-@require[(for-label mischief/contract)]
-@defmodule[mischief/contract]
+@include-section["contract.scrbl"]
 
-@section{values}
+@section[#:tag "values"]{@racketmodname[mischief/values]: Multiple Values}
 @require[(for-label mischief/values)]
 @defmodule[mischief/values]
 
-@section{for}
-@require[(for-label mischief/for)]
-@defmodule[mischief/for]
+@defform[(values-of e)]{
+
+Produces the values returned by the expression @racket[e] as a list.
+
+}
+
+@include-section["for.scrbl"]
 
 @section{memoize}
 @require[(for-label mischief/memoize)]

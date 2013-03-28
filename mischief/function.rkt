@@ -19,7 +19,8 @@
     syntax/name
     syntax/parse
     mischief/parse)
-  racket/promise)
+  racket/promise
+  racket/private/norm-arity)
 
 (define (dynamic-wrap-procedure proc wrap)
   (make-keyword-procedure
@@ -28,11 +29,10 @@
         (lambda ()
           (keyword-apply proc ks vs args))))))
 
-(define (normalize-procedure-arity arity)
-  (procedure-arity (procedure-reduce-arity values arity)))
-
 (define-syntax-rule (eta proc)
   (make-eta (lambda () (#%expression proc))))
+
+(define normalize-procedure-arity normalize-arity)
 
 (define-syntax (define/keywords stx)
   (syntax-parse stx
