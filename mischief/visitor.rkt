@@ -18,12 +18,7 @@
   map/reduce-visitor
   make-map-visitor
   make-for-each-visitor
-  make-map/reduce-visitor
-  vector-reconstructor
-  hash-reconstructor
-  set-reconstructor
-  box-reconstructor
-  atom?)
+  make-map/reduce-visitor)
 
 (require
   racket/list

@@ -24,6 +24,4 @@ Produces the values returned by the expression @racket[e] as a list.
 
 @include-section["fold.scrbl"]
 
-@section{visitor}
-@require[(for-label mischief/visitor)]
-@defmodule[mischief/visitor]
+@include-section["visitor.scrbl"]
