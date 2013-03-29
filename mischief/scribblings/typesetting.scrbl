@@ -4,9 +4,6 @@
 
 @title{Typesetting Formats}
 
-@section[#:style '(toc)]{Scribble and Documentation}
-
-@require[(for-label mischief/examples)]
-@defmodule[mischief/examples]
+@include-section["examples.scrbl"]
 
 @include-section["web.scrbl"]
