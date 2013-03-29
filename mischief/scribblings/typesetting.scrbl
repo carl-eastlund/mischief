@@ -9,7 +9,4 @@
 @require[(for-label mischief/examples)]
 @defmodule[mischief/examples]
 
-@section[#:style '(toc)]{Web Content}
-
-@require[(for-label mischief/web)]
-@defmodule[mischief/web]
+@include-section["web.scrbl"]
