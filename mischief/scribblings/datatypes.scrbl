@@ -173,15 +173,18 @@ Compare two symbols lexicographically, essentially composing
 @defproc[(symbol-upcase [sym symbol?]) symbol?]
 @defproc[(symbol-downcase [sym symbol?]) symbol?]
 @defproc[(symbol-titlecase [sym symbol?]) symbol?]
+@defproc[(symbol-foldcase [sym symbol?]) symbol?]
 )]{
 
 Convert the case of a symbol's name, by analogy with @racket[string-upcase],
-@racket[string-downcase], and @racket[string-titlecase].
+@racket[string-downcase], @racket[string-titlecase], and
+@racket[string-foldcase].
 
 @data-examples[
 (symbol-upcase 'Two-words)
 (symbol-downcase 'Two-words)
 (symbol-titlecase 'Two-words)
+(symbol-foldcase 'Two-words)
 ]
 
 }
@@ -224,15 +227,18 @@ Compare two keywords lexicographically, essentially composing
 @defproc[(keyword-upcase [sym keyword?]) keyword?]
 @defproc[(keyword-downcase [sym keyword?]) keyword?]
 @defproc[(keyword-titlecase [sym keyword?]) keyword?]
+@defproc[(keyword-foldcase [sym keyword?]) keyword?]
 )]{
 
 Convert the case of a keyword's name, by analogy with @racket[string-upcase],
-@racket[string-downcase], and @racket[string-titlecase].
+@racket[string-downcase], @racket[string-titlecase], and
+@racket[string-foldcase].
 
 @data-examples[
 (keyword-upcase '#:Two-words)
 (keyword-downcase '#:Two-words)
 (keyword-titlecase '#:Two-words)
+(keyword-foldcase '#:Two-words)
 ]
 
 }
@@ -542,7 +548,7 @@ Produces the value of the @racket[i]th field of @racket[x], indexed from 0.
 }
 
 @defproc[
-(transparent-struct-name [x transparent-struct?]
+(transparent-struct-type-name [x transparent-struct?]
   [#:inspector inspector inspector? (current-inspector)])
 symbol?
 ]{
@@ -745,23 +751,34 @@ any/c
 ]{
 
 Produces an s-expression representing an expression that would evaluate to
-@racket[x].  Can be customized using @racketvalfont{#:custom}.  The procedure
-@racket[custom] is applied to values within @racket[x].  It is expected to
-return a procedure of two arguments for values it can quote, and
-@racket[#false] otherwise.  The two-argument procedure is applied to a
-recursive quoting procedure and the value to quote.
+@racket[x].  Can be customized using @racketvalfont{#:custom}; see
+@racket[custom-quoter] below for an example.
 
 @data-examples[
 (quotation (list (vector 1 2) (box "three")))
+]
+
+}
+
+@defproc[
+(custom-quoter
+  [pred predicate/c]
+  [proc (-> (-> any/c any/c) any/c any/c)])
+(-> any/c (or/c (-> (-> any/c any/c) any/c any/c) #false))
+]{
+
+Produces a custom quotation procedure that quotes values satisfying
+@racket[pred] using @racket[proc] and leaves everything else to default
+quotation.
+
+@data-examples[
 (struct both [one two])
-(define (quote-both x)
-  (and (both? x) recursive-quote-both))
-(define (recursive-quote-both rec-quote b)
+(define (quote-both rec b)
   `(both
-     ,(rec-quote (both-one b))
-     ,(rec-quote (both-two b))))
+     ,(rec (both-one b))
+     ,(rec (both-two b))))
 (quotation (both (list (both 1 2)) 3)
-  #:custom quote-both)
+  #:custom (custom-quoter both? quote-both))
 ]
 
 }

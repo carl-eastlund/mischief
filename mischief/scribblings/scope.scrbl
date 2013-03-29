@@ -59,6 +59,13 @@ Calls @racket[proc] with the result of
 
 }
 
+@defform[(with-new-scope body ...+)]{
+
+Executes the @racket[body] forms with @racket[current-scope] set to a fresh
+scope.
+
+}
+
 @section{Local Bindings}
 
 @deftogether[(

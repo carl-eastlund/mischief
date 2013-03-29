@@ -111,15 +111,18 @@ An alias for @racket[make-syntax-introducer].
 @defproc[(identifier-upcase [id identifier?]) identifier?]
 @defproc[(identifier-downcase [id identifier?]) identifier?]
 @defproc[(identifier-titlecase [id identifier?]) identifier?]
+@defproc[(identifier-foldcase [id identifier?]) identifier?]
 )]{
+
 Change the letters in the name of an identifier by analogy to
-@racket[string-upcase], @racket[string-downcase], and
-@racket[string-titlecase].
+@racket[string-upcase], @racket[string-downcase], @racket[string-titlecase],
+and @racket[string-foldcase].
 
 @transform-examples[
 (identifier-upcase #'Two-words)
 (identifier-downcase #'Two-words)
 (identifier-titlecase #'Two-words)
+(identifier-foldcase #'Two-words)
 ]
 }
 

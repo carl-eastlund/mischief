@@ -13,8 +13,9 @@
   format-fresh
   fresh-mark
   identifier-upcase
-  identifier-titlecase
   identifier-downcase
+  identifier-titlecase
+  identifier-foldcase
   syntax-local-variable-reference
   check-missing-identifier)
 
@@ -100,6 +101,9 @@
 
 (define (identifier-titlecase id)
   (identifier-rename string-titlecase id))
+
+(define (identifier-foldcase id)
+  (identifier-rename string-foldcase id))
 
 (define (fresh [x 'fresh]
           #:add-suffix? [add-suffix? #true]

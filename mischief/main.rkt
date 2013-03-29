@@ -2,8 +2,7 @@
 (require mischief/require)
 
 (module+ test
-  (require rackunit/docs-complete)
-  (check-docs (quote mischief)))
+  (require rackunit/docs-complete))
 
 (module+ reflection
   (require scribble/manual)
