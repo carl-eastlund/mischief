@@ -61,7 +61,7 @@
   (define (preserve-vector stxs) #`(vector-immutable #,@stxs))
   (define (preserve-box stx) #`(box-immutable #,stx))
   (define (preserve-prefab k stxs) #`(make-prefab-struct (quote #,k) #,@stxs))
-  (define (preserve-atomic x) (quote-transformer x)))
+  (define (preserve-atomic rec x) (quote-transformer x)))
 
 (define-syntax (quote-syntax/preserve-expensive-metadata stx)
   (syntax-parse stx
