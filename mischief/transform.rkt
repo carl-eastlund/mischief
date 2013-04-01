@@ -1,23 +1,47 @@
 #lang racket/base
 
+(require
+  racket/contract)
+
 (provide
+  (contract-out
+    [to-syntax
+     (->*
+         {any/c}
+         {#:stx (or/c syntax? #false)
+          #:source source-location?
+          #:context (or/c syntax? #false)
+          #:prop (or/c syntax? #false)}
+       syntax?)]
+    [to-datum (-> any/c (not/c syntax?))]
+    [fresh
+     (->*
+         {}
+         {(or/c string? symbol? identifier? keyword? char? number?)
+          #:add-suffix? boolean?
+          #:source source-location?}
+       identifier?)]
+    [format-fresh
+     (->*
+         {string?}
+         {#:add-suffix? boolean?
+          #:source source-location?}
+       #:rest (listof (or/c string? symbol? identifier? keyword? char? number?))
+       identifier?)]
+    [id-transform (-> syntax? (or/c syntax? (-> identifier? syntax?)) syntax?)]
+    [fresh-mark (-> (-> syntax? syntax?))]
+    [identifier-upcase (-> identifier? identifier?)]
+    [identifier-downcase (-> identifier? identifier?)]
+    [identifier-titlecase (-> identifier? identifier?)]
+    [identifier-foldcase (-> identifier? identifier?)]
+    [syntax-local-variable-reference (-> variable-reference?)]
+    [check-missing-identifier
+     (-> (listof identifier?) (listof identifier?) (or/c identifier? #false))])
   quote-transformer
   rename-transformers
   rename-transformer
   set!-transformer
-  id-transformer
-  id-transform
-  to-syntax
-  to-datum
-  fresh
-  format-fresh
-  fresh-mark
-  identifier-upcase
-  identifier-downcase
-  identifier-titlecase
-  identifier-foldcase
-  syntax-local-variable-reference
-  check-missing-identifier)
+  id-transformer)
 
 (require
   racket/function
