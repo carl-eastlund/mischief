@@ -74,7 +74,7 @@
       (lambda (other)
         (if combine/key
           (combine/key key other value)
-          (dict-key-multiple-values-error base key value other)))
+          (dict-key-multiple-values-error 'dict-add base key value other)))
       #:failure (lambda () value))))
 
 (define (dict-subtract base . dicts)
