@@ -149,9 +149,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Convert Null
 
-(define (convert-null mt st) 'empty)
+(define (convert-null mt st) '(quote empty))
 (define (quotable-null? mt st) #true)
-(define prefer-quote-null? #false)
+(define prefer-quote-null? #true)
 
 (define null-expr-style-extension
   (expr-style-extension null?
@@ -535,6 +535,35 @@
     dict-quotable?
     prefer-quote-dict?))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Convert EOF
+
+(define (convert-eof x st) 'eof)
+(define (eof-quotable? x st) #true)
+(define prefer-quote-eof? #false)
+
+(define eof-expr-style-extension
+  (expr-style-extension eof-object?
+    convert-eof
+    eof-quotable?
+    prefer-quote-eof?))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Convert Undefined
+
+(define undefined (letrec {[undefined undefined]} undefined))
+(define (undefined? x) (eq? x undefined))
+
+(define (convert-undefined x st) (stylish-unprintable-expr 'undefined))
+(define (undefined-quotable? x st) #true)
+(define prefer-quote-undefined? #false)
+
+(define undefined-expr-style-extension
+  (expr-style-extension undefined?
+    convert-undefined
+    undefined-quotable?
+    prefer-quote-undefined?))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public Definitions
 
@@ -566,6 +595,8 @@
     promise-expr-style-extension
     syntax-expr-style-extension
     path-expr-style-extension
-    dict-expr-style-extension))
+    dict-expr-style-extension
+    eof-expr-style-extension
+    undefined-expr-style-extension))
 
 (define current-expr-style (make-parameter default-expr-style))
