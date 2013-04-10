@@ -27,6 +27,11 @@
          {syntax?}
          {#:scope scope? #:stop-at (or/c (listof syntax?) #false)}
        syntax?)]
+    [expand-expression-in-scope
+     (->*
+         {syntax?}
+         {#:scope scope? #:stop-at (or/c (listof syntax?) #false)}
+       syntax?)]
     [expand-in-scope-for-syntax
      (->*
          {syntax?}
@@ -111,6 +116,15 @@
   (parameterize {[current-scope initial-scope]}
     (local-expand stx
       (scope-expansion-context sc)
+      (if stop (append (kernel-form-identifier-list) stop) null)
+      (scope-definition-context sc))))
+
+(define (expand-expression-in-scope stx
+          #:scope [sc (current-scope)]
+          #:stop-at [stop #false])
+  (parameterize {[current-scope initial-scope]}
+    (local-expand stx
+      'expression
       (if stop (append (kernel-form-identifier-list) stop) null)
       (scope-definition-context sc))))
 
