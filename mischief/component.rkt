@@ -15,9 +15,11 @@
   (for-syntax
     racket/base
     racket/match
+    racket/function
     racket/syntax
     syntax/parse
     syntax/parse/experimental/specialize
+    mischief/function
     mischief/for
     mischief/list
     mischief/parse
@@ -58,6 +60,62 @@
         [((~literal begin) body:expr ...)
          (expand-declarations (@ body))])))
 
+  (define (bind-component-syntax desc #:dotted [prefix #false])
+
+    (define label->id
+      (cond
+        [prefix (arg+ dotted prefix)]
+        [else identity]))
+
+    (match desc
+      [(static-description
+         _
+         stx-labels
+         stx-names
+         stx-bodies
+         val-labels
+         val-names
+         _)
+
+       (define/syntax-parse {[val-name ...] ...} val-names)
+       (define/syntax-parse {[stx-name ...] ...} stx-names)
+       (define/syntax-parse {[val-label ...] ...}
+         (map-map label->id val-labels))
+       (define/syntax-parse {[stx-label ...] ...}
+         (map-map label->id stx-labels))
+       (define/syntax-parse {stx-body ...} stx-bodies)
+
+       #'(begin
+           (define-syntaxes {val-name ... ... stx-name ... ...}
+             (rename-transformers #'val-label ... ... #'stx-label ... ...))
+           (define-syntaxes {stx-label ...} stx-body) ...)]))
+
+  (define (quote-description desc)
+    (match desc
+      [(static-description
+         desc-name
+         stx-labels
+         stx-names
+         stx-bodies
+         val-labels
+         val-names
+         ctc-fun)
+       (define/syntax-parse name desc-name)
+       (define/syntax-parse {[stx-label ...] ...} stx-labels)
+       (define/syntax-parse {[stx-name ...] ...} stx-names)
+       (define/syntax-parse {stx-body ...} stx-bodies)
+       (define/syntax-parse {[val-label ...] ...} val-labels)
+       (define/syntax-parse {[val-name ...] ...} val-names)
+       (define/syntax-parse fun ctc-fun)
+       #'(static-description
+           #'name
+           (list (list #'stx-label ...) ...)
+           (list (list #'stx-name ...) ...)
+           (list stx-body ...)
+           (list (list #'val-label ...) ...)
+           (list (list #'val-name ...) ...)
+           #'fun)]))
+
   (define (head-expand-declaration stx)
     (expand-in-scope stx
       #:stop-at
@@ -65,6 +123,9 @@
         #'begin
         #'define-syntaxes
         #'declare-contracted-values)))
+
+  (define (dotted base-id label-id)
+    (format-id label-id #:source base-id "~a.~a" base-id label-id))
 
   (define-syntax-class/specialize description
     (static-binding static-description?
@@ -116,17 +177,19 @@
      (with-new-scope
        (define static-desc (@ desc.value))
        (define/syntax-parse quoted-desc
-         (quote-description static-desc))
-       (define/syntax-parse [internal ...]
-         (map syntax-local-introduce
+         (syntax-local-introduce
+           (quote-description static-desc)))
+       (define/syntax-parse internal
+         (syntax-local-introduce
            (bind-component-syntax static-desc)))
-       (define/syntax-parse [external ...]
-         (map syntax-local-introduce
+       (define/syntax-parse external
+         (syntax-local-introduce
            (bind-component-syntax static-desc
-             #:dotted #'comp-name)))
+             #:dotted (syntax-local-introduce #'comp-name))))
 
        (define/syntax-parse {[label ...] ...}
-         (static-description-val-labels static-desc))
+         (map-map syntax-local-introduce
+           (static-description-val-labels static-desc)))
        (define/syntax-parse {[comp-name.label ...] ...}
          (map-map (arg+ dotted #'comp-name) (@ label)))
 
@@ -138,12 +201,12 @@
                quoted-desc))
            (define comp-value
              (block
-               internal ...
+               internal
                body ...
                (make-component label ... ...)))
            (define-values {comp-name.label ... ...}
              (component->values comp-value))
-           external ...))]))
+           external))]))
 
 (module* test mischief
 
