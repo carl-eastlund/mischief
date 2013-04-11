@@ -14,8 +14,10 @@
 (require
   (for-syntax
     racket/base
+    racket/match
     racket/syntax
     syntax/parse
+    syntax/parse/experimental/specialize
     mischief/for
     mischief/list
     mischief/parse
@@ -62,7 +64,11 @@
       (list
         #'begin
         #'define-syntaxes
-        #'declare-contracted-values))))
+        #'declare-contracted-values)))
+
+  (define-syntax-class/specialize description
+    (static-binding static-description?
+      "the name of a component description")))
 
 (define-syntax (declare-contracted-values stx)
   (wrong-syntax stx
@@ -104,19 +110,40 @@
                   (list (list (quote-syntax val-name) ...) ...)
                   #'build-contracts)))]))]))
 
-(define-syntax (define-component-instance stx)
+(define-syntax (define-component stx)
   (syntax-parse stx
     [(_ comp-name:id #:: desc:description body:expr ...)
      (with-new-scope
-       (match (@ desc.value)
-         [(static-description _ slabs sids sexprs vlabs vids cfun)
-          (define/syntax-parse {[stx-label ...] ...} slabs)
-          (define/syntax-parse {[stx-name ...] ...} sids)
-          (define/syntax-parse {[stx-body ...] ...} sexprs)
-          (define/syntax-parse {[val-label ...] ...} vlabs)
-          (define/syntax-parse {[val-name ...] ...} vids)
-          (define/syntax-parse ctc-fun cfun)
-          ]))]))
+       (define static-desc (@ desc.value))
+       (define/syntax-parse quoted-desc
+         (quote-description static-desc))
+       (define/syntax-parse [internal ...]
+         (map syntax-local-introduce
+           (bind-component-syntax static-desc)))
+       (define/syntax-parse [external ...]
+         (map syntax-local-introduce
+           (bind-component-syntax static-desc
+             #:dotted #'comp-name)))
+
+       (define/syntax-parse {[label ...] ...}
+         (static-description-val-labels static-desc))
+       (define/syntax-parse {[comp-name.label ...] ...}
+         (map-map (arg+ dotted #'comp-name) (@ label)))
+
+       #'(begin
+           (define-syntax comp-name
+             (static-comp
+               #'comp-name
+               #'comp-value
+               quoted-desc))
+           (define comp-value
+             (block
+               internal ...
+               body ...
+               (make-component label ... ...)))
+           (define-values {comp-name.label ... ...}
+             (component->values comp-value))
+           external ...))]))
 
 (module* test mischief
 
