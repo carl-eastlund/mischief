@@ -8,8 +8,7 @@
   declare-component
   declare-contracted
   declare-contracted-values
-  declare
-  declare-values)
+  declare)
 
 (require
   (for-syntax
@@ -24,7 +23,8 @@
     mischief/list
     mischief/parse
     mischief/scope
-    mischief/transform))
+    mischief/transform)
+  mischief/shorthand)
 
 (begin-for-syntax
 
@@ -129,11 +129,20 @@
 
   (define-syntax-class/specialize description
     (static-binding static-description?
-      "the name of a component description")))
+      "the name of a component description"))
 
-(define-syntax (declare-contracted-values stx)
-  (wrong-syntax stx
-    "must only be used inside define-component-description"))
+  (define (declaration-transformer stx)
+    (wrong-syntax stx
+      "must only be used inside define-component-description")))
+
+(define-syntax declare-component declaration-transformer)
+(define-syntax declare-contracted-values declaration-transformer)
+
+(define-shorthand (declare-contracted name:id ctc:expr)
+  (declare-contracted-values [name ctc]))
+
+(define-shorthand (declare name:id ...)
+  (declare-contracted-values [name any/c] ...))
 
 (define-syntax (define-component-description stx)
   (syntax-parse stx
