@@ -37,6 +37,17 @@
      val-names
      ctc-fun])
 
+  (struct static-component
+    [stx-name
+     val-name
+     description])
+
+  (struct static-generic
+    [stx-name
+     val-name
+     domains
+     range])
+
   (define (expand-declarations stxs)
     (for/append {[stx (in-list stxs)]}
       (expand-declaration stx)))
@@ -127,9 +138,29 @@
   (define (dotted base-id label-id)
     (format-id label-id #:source base-id "~a.~a" base-id label-id))
 
-  (define-syntax-class/specialize description
+  (define-splicing-syntax-class generic-formals
+    #:attributes {[name 1] [domain 1]}
+    (pattern (~seq arg-name #:: desc:description-spec)
+      #:attr [name 1] (list (@ arg-name))
+      #:attr [domain 1] (list (@ desc.value)))
+    (pattern (~seq [name:id #:: desc:description-spec] ...)
+      #:attr [domain 1] (@ desc.value)))
+
+  (define-splicing-syntax-class description-spec
+    #:attributes {value}
+    (pattern :description-id))
+
+  (define-syntax-class/specialize description-id
     (static-binding static-description?
       "the name of a component description"))
+
+  (define-syntax-class/specialize component-id
+    (static-binding static-component?
+      "the name of a component"))
+
+  (define-syntax-class/specialize generic-id
+    (static-binding static-generic?
+      "the name of a generic component"))
 
   (define (declaration-transformer stx)
     (wrong-syntax stx
@@ -163,9 +194,9 @@
               ...))
            ...}
           (define/syntax-parse {[stx-label ...] ...}
-            (map-map (out-of-scope (@ stx-name))))
+            (map-map out-of-scope (@ stx-name)))
           (define/syntax-parse {[val-label ...] ...}
-            (map-map (out-of-scope (@ val-name))))
+            (map-map out-of-scope (@ val-name)))
           #'(begin
               (define (build-contracts val-name ... ...)
                 (define-syntaxes {stx-name ...} stx-body) ...
@@ -182,10 +213,10 @@
 
 (define-syntax (define-component stx)
   (syntax-parse stx
-    [(_ comp-name:id #:: desc:description body:expr ...)
+    [(_ comp-name:id #:: desc:description-spec body:expr ...)
      (with-new-scope
        (define static-desc (@ desc.value))
-       (define/syntax-parse quoted-desc
+       (define/syntax-parse desc-name
          (syntax-local-introduce
            (quote-description static-desc)))
        (define/syntax-parse internal
@@ -204,7 +235,7 @@
 
        #'(begin
            (define-syntax comp-name
-             (static-comp
+             (static-component
                #'comp-name
                #'comp-value
                quoted-desc))
@@ -216,6 +247,98 @@
            (define-values {comp-name.label ... ...}
              (component->values comp-value))
            external))]))
+
+(define-syntax (define-component-instance stx)
+  (syntax-parse stx
+    [(_ inst-name:id (gen-name:generic-id arg-name:component-id ...))
+
+     (define args (@ arg-name.value))
+     (define gen (@ gen-name.value))
+     (define range (static-generic-range gen))
+
+     (define/syntax-parse gen-value (static-generic-val-name gen))
+     (define/syntax-parse [arg-value ...] (map static-component-val-name args))
+     (define/syntax-parse quoted-range
+       (quote-description range))
+     (define/syntax-parse {[inst-name.label ...] ...}
+       (map-map (arg+ dotted #'inst-name)
+         (map-map syntax-local-introduce
+           (static-description-val-labels range))))
+     (define/syntax-parse external
+       (bind-component-syntax range
+         #:dotted #'inst-name))
+
+     #'(begin
+         (define-syntax inst-name
+           (static-component
+             #'inst-name
+             #'inst-value
+             quoted-range))
+         (define inst-value
+           (gen-value arg-value ...))
+         (define-values {inst-name.label ... ...}
+           (component->values inst-value))
+         external)]))
+
+(define-syntax (define-generic-component stx)
+  (syntax-parse stx
+    [(_ (gen-name:id args:generic-formals)
+        #:: range:description-spec
+        body:expr ...)
+
+     (define/syntax-parse [arg-value ...] (map fresh (@ args.name)))
+     (define/syntax-parse [quoted-domain ...]
+       (map syntax-local-introduce
+         (map quote-description (@ args.domain))))
+     (define/syntax-parse quoted-range
+       (syntax-local-introduce
+         (quote-description (@ range.value))))
+
+     (define/syntax-parse {[val-label ...] ...}
+       (map-map syntax-local-introduce
+         (static-description-val-labels (@ range.value))))
+
+     (define/syntax-parse {[(arg-name.label ...) ...] ...}
+       (for/list {[name-stx (in-list (@ args.name))]
+                  [domain (in-list (@ args.domain))]}
+         (map-map (arg+ dotted name-stx)
+           (map-map syntax-local-introduce
+             (static-description-val-labels domain)))))
+
+     (define/syntax-parse [import ...]
+       (for/list {[name-stx (in-list (@ args.name))]
+                  [domain (in-list (@ args.domain))]}
+         (syntax-local-introduce
+           (bind-component-syntax domain #:dotted name-stx))))
+
+     (define/syntax-parse internal
+       (syntax-local-introduce
+         (bind-component-syntax (@ range.value))))
+
+     #'(begin
+         (define-syntax gen-name
+           (static-generic
+             #'gen-name
+             #'gen-value
+             (list quoted-domain ...)
+             quoted-range))
+         (define (gen-value arg-value ...)
+           (define-syntaxes {args.name ...}
+             (values
+               (static-component
+                 #'args.name
+                 #'arg-value
+                 quoted-domain)
+               ...))
+           (define-values {arg-name.label ... ...}
+             (component->values arg-value))
+           ...
+           import
+           ...
+           internal
+           body
+           ...
+           (make-component val-label ... ...)))]))
 
 (module* test mischief
 
