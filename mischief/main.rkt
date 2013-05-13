@@ -52,6 +52,7 @@
   syntax/parse
   syntax/parse/define
   syntax/parse/experimental/specialize
+  syntax/parse/experimental/template
   syntax/id-table
   syntax/kerncase
   syntax/srcloc

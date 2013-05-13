@@ -2,6 +2,7 @@
 
 (provide
   @
+  $
   syntax-matcher
   syntax-matches?
   syntax-class/c
@@ -41,6 +42,7 @@
   racket/struct-info
   syntax/parse
   syntax/parse/experimental/specialize
+  syntax/parse/experimental/template
   mischief/list
   mischief/boolean
   mischief/maybe
@@ -49,6 +51,9 @@
 
 (define-syntax @
   (make-rename-transformer #'attribute))
+
+(define-syntax $
+  (make-rename-transformer #'template))
 
 (define-syntax (syntax-class/c stx)
   (syntax-parse stx
