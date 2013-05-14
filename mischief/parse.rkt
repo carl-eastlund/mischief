@@ -3,6 +3,7 @@
 (provide
   @
   $
+  $!
   syntax-matcher
   syntax-matches?
   syntax-class/c
@@ -54,6 +55,9 @@
 
 (define-syntax $
   (make-rename-transformer #'template))
+
+(define-syntax $!
+  (make-rename-transformer #'quote-syntax))
 
 (define-syntax (syntax-class/c stx)
   (syntax-parse stx
