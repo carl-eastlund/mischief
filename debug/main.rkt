@@ -13,7 +13,8 @@
   debug-exception
   dprintf
   stylish-dprintf
-  call-and-debug)
+  call-and-debug
+  call-with-debug-frame)
 
 (require
   (for-syntax
