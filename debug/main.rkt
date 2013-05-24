@@ -28,6 +28,7 @@
   racket/function
   syntax/srcloc
   syntax/location
+  mischief/match
   mischief/boolean
   mischief/error
   mischief/string
@@ -173,7 +174,7 @@
   (low-level-debug stylish-dprintf "~f ~s" (list* fmt args) e))
 
 (define (values->expr xs)
-  (match xs
+  (match! xs
     [(list x) (low-level-debug stylish-value->expr x)]
     [_ (list* 'values (low-level-debug map stylish-value->expr xs))]))
 
@@ -185,8 +186,8 @@
      (list 'raise (low-level-debug stylish-value->expr x))]))
 
 (define (call-with-debug-frame
-          #:enter [enter-prefix (current-debug-enter-prefix)]
-          #:exit [exit-prefix (current-debug-exit-prefix)]
+          #:enter [enter-prefix (debug-prefix 'enter)]
+          #:exit [exit-prefix (debug-prefix 'exit)]
           #:thunk thunk
           fmt . args)
   (define (enter)
@@ -199,38 +200,40 @@
   (low-level-debug dynamic-wind enter work exit))
 
 (define (dprintf
-          #:prefix [prefix (current-debug-prefix)]
+          #:prefix [prefix (debug-prefix)]
           fmt . args)
   (low-level-debug eprintf "~a"
-    (low-level-debug indent prefix
+    (low-level-debug prefix-lines prefix
       (low-level-debug apply format fmt args))))
 
 (define (stylish-dprintf
-          #:prefix [prefix (current-debug-prefix)]
+          #:prefix [prefix (debug-prefix)]
           #:columns [columns (current-stylish-print-columns)]
           #:expr-style [est (current-expr-style)]
           #:print-style [pst (current-print-style)]
           fmt . args)
   (low-level-debug dprintf #:prefix prefix "~a"
     (apply low-level-debug stylish-format
-      #:columns (max 1 (- columns (indent-length) (string-length prefix)))
+      #:columns (max 1 (- columns (string-length prefix)))
       #:expr-style est
       #:print-style pst
       fmt args)))
 
-(define (indent prefix str)
-  (define n (indent-length))
-  (define indentation (make-string n #\space))
+(define (prefix-lines prefix str)
   (apply string-append
     (for/list {[line (in-list (string-lines str))]}
-      (format "~a~a~a\n" indentation prefix line))))
+      (string-append prefix line "\n"))))
 
-(define (indent-length)
-  (* (debug-indent-width) (current-debug-depth)))
+(define (debug-prefix [event #false])
+  ((current-debug-indent) (current-debug-depth) event))
 
-(define (debug-indent-width) 1)
+(define (default-debug-indent depth event)
+  (format "#;~a~a "
+    (make-string depth #\space)
+    (match! event
+      ['enter ">> "]
+      ['exit "<< "]
+      [#false "! "])))
 
 (define current-debug-depth (make-parameter 0))
-(define current-debug-enter-prefix (make-parameter ">> "))
-(define current-debug-exit-prefix (make-parameter "<< "))
-(define current-debug-prefix (make-parameter "| "))
+(define current-debug-indent (make-parameter default-debug-indent))
