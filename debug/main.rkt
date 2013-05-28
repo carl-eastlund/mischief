@@ -231,9 +231,9 @@
   (format "#;~a~a "
     (make-string depth #\space)
     (match! event
-      ['enter ">> "]
-      ['exit "<< "]
-      [#false "! "])))
+      ['enter ">>"]
+      ['exit "<<"]
+      [#false "!"])))
 
 (define current-debug-depth (make-parameter 0))
 (define current-debug-indent (make-parameter default-debug-indent))
