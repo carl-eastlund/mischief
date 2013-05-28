@@ -6,11 +6,30 @@
   print^
   print-style^
   format^
-  stylish^)
+  stylish^
+
+  gen:stylish-writable
+  stylish-writable?
+  generic-stylish-write
+  stylish-writable/c
+
+  gen:stylish-printable
+  stylish-printable?
+  generic-stylish-value->expr
+  generic-stylish-quotable?
+  stylish-printable/c)
 
 (require
   (for-syntax
-    syntax/parse))
+    syntax/parse)
+  racket/generic)
+
+(define-generics stylish-writable
+  (generic-stylish-write stylish-writable port style))
+
+(define-generics stylish-printable
+  (generic-stylish-value->expr stylish-printable style)
+  (generic-stylish-quotable? stylish-printable style))
 
 (define-signature expression^
   [value->expression

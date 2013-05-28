@@ -6,6 +6,7 @@
 (require
   racket/unit
   racket/contract
+  mischief/stylish/signatures
   mischief/stylish/expression
   mischief/stylish/expr-style
   mischief/stylish/print
@@ -31,6 +32,17 @@
 (provide
 
   with-stylish-port
+
+  gen:stylish-writable
+  stylish-writable?
+  generic-stylish-write
+  stylish-writable/c
+
+  gen:stylish-printable
+  stylish-printable?
+  generic-stylish-value->expr
+  generic-stylish-quotable?
+  stylish-printable/c
 
   ;; struct-out will not work here currently:
   stylish-comment-expr

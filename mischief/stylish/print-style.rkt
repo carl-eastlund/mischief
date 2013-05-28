@@ -198,6 +198,7 @@
     (set-print-style-default-printer
       empty-print-style
       write)
+    (print-style-extension stylish-writable? generic-stylish-write)
     (print-style-extension boolean? print-atom)
     (print-style-extension number? print-atom)
     (print-style-extension string? print-atom)

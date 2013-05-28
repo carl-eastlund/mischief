@@ -564,6 +564,15 @@
     undefined-quotable?
     prefer-quote-undefined?))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Convert Printable
+
+(define printable-expr-style-extension
+  (expr-style-extension stylish-printable?
+    generic-stylish-value->expr
+    generic-stylish-quotable?
+    #true))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public Definitions
 
@@ -572,6 +581,7 @@
     (set-expr-style-default-convert
       empty-expr-style
       (lambda (x) `(quote ,x)))
+    printable-expr-style-extension
     boolean-expr-style-extension
     number-expr-style-extension
     string-expr-style-extension
