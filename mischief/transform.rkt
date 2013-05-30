@@ -152,10 +152,7 @@
          ;; keep the base in the table as long as its derivatives exist
          (hash-set! fresh:sym->base sym sym0))]
       [else sym0]))
-  (define ident (to-syntax sym #:source source))
-  (with-new-scope
-    (scope-bind-value! ident)
-    (in-scope ident)))
+  ((fresh-mark) (to-syntax sym #:source source)))
 
 (define (unintern sym)
   (string->uninterned-symbol
