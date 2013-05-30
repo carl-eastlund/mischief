@@ -53,6 +53,7 @@
   syntax/id-table
   mischief/fold
   mischief/visitor
+  mischief/scope
   (for-template
     racket/base))
 
@@ -142,17 +143,19 @@
           fmt . args)
   (define sym0 (apply format-symbol fmt args))
   (define sym
-    (unintern
-      (cond
-        [add-suffix?
-         (define n (add1 (hash-ref fresh:base->count sym0 0)))
-         (begin0 (format-symbol "~a~~~a" sym0 n)
-           ;; update the number of times we've seen this symbol
-           (hash-set! fresh:base->count sym0 n)
-           ;; keep the base in the table as long as its derivatives exist
-           (hash-set! fresh:sym->base sym sym0))]
-        [else sym0])))
-   ((fresh-mark) (to-syntax sym #:source source)))
+    (cond
+      [add-suffix?
+       (define n (add1 (hash-ref fresh:base->count sym0 0)))
+       (begin0 (format-symbol "~a~~~a" sym0 n)
+         ;; update the number of times we've seen this symbol
+         (hash-set! fresh:base->count sym0 n)
+         ;; keep the base in the table as long as its derivatives exist
+         (hash-set! fresh:sym->base sym sym0))]
+      [else sym0]))
+  (define ident (to-syntax sym #:source source))
+  (with-new-scope
+    (scope-bind-value! ident)
+    (in-scope ident)))
 
 (define (unintern sym)
   (string->uninterned-symbol
