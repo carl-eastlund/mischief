@@ -5,13 +5,34 @@
   label-id-representative
   label-identifier=?
   label-identifier-hash-code
+  free-identifier-hash-code
+  bound-identifier-hash-code
   make-immutable-label-id-table
   make-weak-label-id-table
   make-label-id-table)
 
 (require
+  racket/list
   racket/dict
   mischief/transform)
+
+(define (bound-identifier-hash-code id
+          [hash-code eq-hash-code]
+          #:phase [phase (syntax-local-phase-level)])
+  (hash-code (syntax-e id)))
+
+(define (label-identifier-hash-code id
+          [hash-code eq-hash-code]
+          #:phase [phase (syntax-local-phase-level)])
+  (hash-code (syntax-e id)))
+
+(define (free-identifier-hash-code id
+          [hash-code eq-hash-code]
+          #:phase [phase (syntax-local-phase-level)])
+  (define binding (identifier-binding id phase))
+  (cond
+    [(list? binding) (hash-code (second binding))]
+    [else (hash-code (syntax-e id))]))
 
 (define (check-duplicate-label ids)
   (define table (make-label-id-table))
@@ -41,9 +62,6 @@
     (bound-identifier=?
       (label-id-representative one)
       (label-id-representative two))))
-
-(define (label-identifier-hash-code id [rec equal-hash-code])
-  (rec (syntax-e id)))
 
 (define (make-immutable-label-id-table [init '()])
   (define table0
