@@ -1,6 +1,7 @@
 #lang racket/base
 
 (provide
+  define-stream
   stream-interleave
   stream-interleave*
   stream*
@@ -59,6 +60,19 @@
   [(_ st) st]
   [(_ x . ys) (stream-cons x (stream* . ys))])
 
+(define-syntax (define-stream stx)
+  (syntax-parse stx
+    [(_ name:id st:expr)
+     (quasisyntax/loc stx
+       (define name
+         (delayed
+           (unsyntax
+             (syntax/loc stx
+               (delay
+                 (let {[s st]}
+                   (check-stream! 'define-stream s)
+                   s)))))))]))
+
 (define-syntax (stream-delay stx)
   (syntax-parse stx
     [(_ st:expr)
@@ -66,7 +80,14 @@
        (delayed
          (unsyntax
            (syntax/loc stx
-             (delay st)))))]))
+             (delay
+               (let {[s st]}
+                 (check-stream! 'stream-delay s)
+                 s))))))]))
+
+(define (check-stream! name st)
+  (unless (stream? st)
+    (raise-argument-error name "stream?" st)))
 
 (define (delayed-empty? st) (stream-empty? (force (delayed-promise st))))
 (define (delayed-first st) (stream-first (force (delayed-promise st))))
