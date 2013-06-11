@@ -105,7 +105,30 @@
             (bytes->path
               (quote #,(path->bytes path))
               (quote #,(path-convention-type path))))))
+    (make-visitor hash?
+      (lambda (rec ht)
+        #`(unquote
+            (#,(hash-maker ht)
+             (quasiquote #,(rec (hash->list ht)))))))
     map-visitor))
+
+(define (hash-maker ht)
+  (cond
+    [(immutable? ht)
+     (cond
+       [(hash-equal? ht) #'make-immutable-hash]
+       [(hash-eqv? ht) #'make-immutable-hasheqv]
+       [(hash-eq? ht) #'make-immutable-hasheq])]
+    [(hash-weak? ht)
+     (cond
+       [(hash-equal? ht) #'make-weak-hash]
+       [(hash-eqv? ht) #'make-weak-hasheqv]
+       [(hash-eq? ht) #'make-weak-hasheq])]
+    [else
+     (cond
+       [(hash-equal? ht) #'make-hash]
+       [(hash-eqv? ht) #'make-hasheqv]
+       [(hash-eq? ht) #'make-hasheq])]))
 
 (define (fresh-mark)
   (make-syntax-introducer))
