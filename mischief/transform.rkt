@@ -1,7 +1,9 @@
 #lang racket/base
 
 (require
-  racket/contract)
+  racket/contract
+  (for-syntax racket/base)
+  (for-template racket/base))
 
 (provide
   (contract-out
