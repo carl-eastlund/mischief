@@ -8,7 +8,8 @@
   stream-delay
   stream-cross-product
   stream-cross-product*
-  stream-take)
+  stream-take
+  stream-zip)
 
 (require
   (for-syntax
@@ -20,6 +21,14 @@
   mischief/match
   mischief/boolean
   mischief/shorthand)
+
+(define (stream-zip stream0 . streams0)
+  (define streams (cons stream0 streams0))
+  (stream-delay
+    (cond!
+      [(ormap stream-empty? streams) empty-stream]
+      [else (stream-cons (map stream-first streams)
+              (apply stream-zip (map stream-rest streams)))])))
 
 (define (stream-interleave . streams)
   (match! streams
