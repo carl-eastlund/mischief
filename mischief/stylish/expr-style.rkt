@@ -7,11 +7,13 @@
   racket/set
   racket/dict
   racket/promise
+  racket/path
   syntax/srcloc
   mischief/boolean
   mischief/define
   mischief/struct
-  mischief/stylish/signatures)
+  mischief/stylish/signatures
+  mischief/for)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Unit Imports
@@ -313,10 +315,11 @@
 (define (convert-hash h st
           #:key [convert-key stylish-value->expr]
           #:value [convert-value stylish-value->expr])
-  (convert-dict h st
-    #:constructor (hash-constructor-name h)
-    #:key convert-key
-    #:value convert-value))
+  (cons (hash-constructor-name h)
+    (for/append {[{k v} (in-hash h)]}
+      (list
+        (stylish-value->expr k st)
+        (stylish-value->expr v st)))))
 
 (define (quotable-hash? h st)
   (and (immutable? h)
@@ -471,8 +474,24 @@
          (convert-datum datum st))]))
   (cond!
     [(source-location-known? stx)
-     (stylish-comment-expr (source-location->string stx) expr)]
+     (stylish-comment-expr (source-location->relative-string stx) expr)]
     [else expr]))
+
+(define (source-location->relative-string src)
+  (source-location->string
+    (source-location->relative-source src)))
+
+(define (source-location->relative-source src [rel (current-directory)])
+  (define source (source-location-source src))
+  (cond
+    [(path-string? source)
+     (srcloc
+       (find-relative-path rel source)
+       (source-location-line src)
+       (source-location-column src)
+       (source-location-position src)
+       (source-location-span src))]
+    [else src]))
 
 (define (quotable-syntax? stx st) #false)
 (define prefer-quote-syntax? #false)
