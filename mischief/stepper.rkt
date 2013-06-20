@@ -11,6 +11,7 @@
 
 (require
   racket/function
+  racket/promise
   syntax/modcode
   macro-debugger/model/trace
   macro-debugger/model/reductions
@@ -54,9 +55,7 @@
     [(original-remarkstep? s)
      (remarkstep type s1 (original-remarkstep-contents s))]))
 
-(define (exn->sexp e)
-  (make-prefab-struct 'error
-    (exn-message e)))
+(define (exn->sexp e) e)
 
 (define (state->sexp st)
   (state
@@ -70,7 +69,7 @@
     (original-state-seq st)))
 
 (define (context->sexp fs)
-  (original-context-fill fs here))
+  (delay (original-context-fill fs here)))
 
 (define (big-context->sexp bfs)
   (map big-frame->sexp bfs))
