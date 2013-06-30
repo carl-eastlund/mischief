@@ -161,9 +161,12 @@
             (add-separators (rest contents) #true)))])]))
 
 (define (render-delimited d port left right cols)
-  (if (<= (delimited-length d) (- cols left right))
+  (if (<= (delimited-length d) (- (columns->number cols) left right))
     (render-one-line d port)
     (render-many-lines d port left right cols)))
+
+(define (columns->number c)
+  (if (number? c) c +inf.0))
 
 (define (render-many-lines d port left right cols)
   (render-contents (delimited-contents d) port left right cols))
