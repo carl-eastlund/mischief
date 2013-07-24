@@ -29,10 +29,7 @@
 (define (free-identifier-hash-code id
           [hash-code eq-hash-code]
           #:phase [phase (syntax-local-phase-level)])
-  (define binding (identifier-binding id phase))
-  (cond
-    [(list? binding) (hash-code (second binding))]
-    [else (hash-code (syntax-e id))]))
+  (hash-code (identifier-binding-symbol id phase)))
 
 (define (check-duplicate-label ids)
   (define table (make-label-id-table))
