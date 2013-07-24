@@ -374,6 +374,60 @@ Equivalent to:
          body ...))))
 }
 
+@subsection{Generic Stylish Printing}
+
+@defidform[gen:stylish-printable]{
+
+A @tech[#:doc '(lib "scribblings/reference/reference.scrbl")]{generic interface}
+containing the methods @racket[generic-stylish-quotable?] and
+@racket[generic-stylish-value->expr].
+
+}
+
+@defproc[(stylish-printable? [x any/c]) boolean?]{
+
+Returns @racket[#true] if @racket[x] is an instance of
+@racket[gen:stylish-printable]; returns @racket[@false] otherwise.
+
+}
+
+@defproc[(generic-stylish-quotable? [x stylish-printable?]) boolean?]{
+
+Used by @racket[default-print-style] to compute the result of
+@racket[stylish-quotable-value?] for instances of
+@racket[gen:stylish-printable].
+
+}
+
+@defproc[(generic-stylish-value->expr [x stylish-printable?]) boolean?]{
+
+Used by @racket[default-print-style] to compute the result of
+@racket[stylish-value->expr] for instances of
+@racket[gen:stylish-printable].
+
+}
+
+@defidform[gen:stylish-writable]{
+
+A @tech[#:doc '(lib "scribblings/reference/reference.scrbl")]{generic interface}
+containing the method @racket[generic-stylish-write].
+
+}
+
+@defproc[(stylish-writable? [x any/c]) boolean?]{
+
+Returns @racket[#true] if @racket[x] is an instance of
+@racket[gen:stylish-writable]; returns @racket[@false] otherwise.
+
+}
+
+@defproc[(generic-stylish-write [x stylish-printable?]) boolean?]{
+
+Used by @racket[default-expr-style] to perform @racket[stylish-write] for
+instances of @racket[gen:stylish-writable].
+
+}
+
 @subsection{Special Expression Types}
 
 @defstruct*[stylish-comment-expr ((comment string?) (expr any/c))]{

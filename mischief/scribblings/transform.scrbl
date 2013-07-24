@@ -209,6 +209,12 @@ tuple
 
 @section{Phase 1 Helpers}
 
+@defproc[(syntax-error [stx syntax?] [fmt string?] [x any/c] ...) none/c]{
+
+An alias for @racket[wrong-syntax].
+
+}
+
 @defproc[(syntax-local-variable-reference) variable-reference?]{
 Produces an anonymous variable reference representing the context currently
 being expanded.

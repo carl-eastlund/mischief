@@ -709,6 +709,148 @@ if it is a procedure and returns @racket[failure] otherwise.
 
 }
 
+@section[#:tag "stream"]{@racketmodname[mischief/stream]: Streams}
+
+@defmodule[mischief/stream]
+
+@defform[(define-stream id expr)]{
+
+Defines @racket[id] as a lazy stream encapsulating @racket[expr].
+
+@data-examples[
+(define-stream naturals
+  (stream-cons 0 (stream-map add1 naturals)))
+naturals
+(stream-ref naturals 0)
+(stream-ref naturals 1)
+(stream-ref naturals 2)
+]
+
+}
+
+@defform[(stream-delay expr)]{
+
+Constructs a lazy stream encapsulating @racket[expr].
+
+@data-examples[
+(define delayed-stream
+  (stream-delay '(1 2 3)))
+delayed-stream
+(stream? delayed-stream)
+(stream-empty? delayed-stream)
+(stream-first delayed-stream)
+(stream? (stream-delay 'not-a-stream))
+(stream-empty? (stream-delay 'not-a-stream))
+]
+
+}
+
+@defform[(stream* x ... st) #:contracts ([x any/c] [st stream?])]{
+
+Creates a lazy stream that contains each @racket[x] followed by the contents of
+@racket[st].
+
+@data-examples[
+(define (nonzero-integers-from k)
+  (stream* k (- k) (nonzero-integers-from (add1 k))))
+(define nonzero-integers
+  (nonzero-integers-from 1))
+(stream-ref nonzero-integers 0)
+(stream-ref nonzero-integers 1)
+(stream-ref nonzero-integers 2)
+(stream-ref nonzero-integers 3)
+(stream-ref nonzero-integers 4)
+]
+
+}
+
+@defproc[(stream-take [st stream?] [n exact-nonnegative-integer?]) list?]{
+
+Produces a list containing the first @racket[n] elements of @racket[st].
+
+@data-examples[
+(stream-take (stream 1 2 3 (error "Oops!")) 3)
+]
+
+@defproc[(stream-zip [st stream?] ...+) stream?]{
+
+Creates a lazy stream containing lists of the respective elements of each
+@racket[st].
+
+@data-examples[
+(stream->list
+  (stream-zip (stream 1 2 3) (stream 'a 'b 'c)))
+]
+
+}
+
+@defproc[(stream-interleave [st stream?] ...) stream?]{
+
+Creates a lazy stream that alternates the elements of the given @racket[st]s.
+
+@data-examples[
+(stream->list
+  (stream-interleave (stream 1 2 3) (stream 'a 'b 'c)))
+]
+
+}
+
+@defproc[(stream-interleave* [st stream?]) stream?]{
+
+Creates a lazy stream from @racket[st], which must be a stream of streams.  The
+resulting stream includes all of the elements from the streams in @racket[st],
+even if @racket[st] is an infinite stream of streams.
+
+@data-examples[
+(stream->list
+  (stream-interleave*
+    (stream (stream 1 2 3) (stream 'a 'b 'c))))
+]
+
+}
+
+@defproc[(stream-cross-product
+           [f (-> any/c any/c any/c)]
+           [st1 stream?]
+           [st2 stream?])
+         stream?]{
+
+Creates a lazy stream whose elements are the results of applying @racket[f] to
+every pairwise combination of elements from @racket[st1] and @racket[st2].
+
+@data-examples[
+(stream->list
+  (stream-cross-product
+    string-ref
+    (stream "cat" "dog")
+    (stream 2 1 0)))
+]
+
+}
+
+@defproc[(stream-cross-product*
+           [f (-> any/c any/c any/c)]
+           [st1 stream?]
+           [st2 stream?])
+         stream?]{
+
+Creates a lazy stream of streams whose elements are the results of applying
+@racket[f] to every pairwise combination of elements from @racket[st1] and
+@racket[st2].
+
+@data-examples[
+(map stream->list
+  (stream->list
+    (stream-cross-product*
+      string-ref
+      (stream "cat" "dog")
+      (stream 2 1 0))))
+]
+
+}
+
+}
+
 @section[#:tag "maybe"]{@racketmodname[mischief/maybe]: Optional Values}
 
 @defmodule[mischief/maybe]

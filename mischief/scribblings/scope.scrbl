@@ -191,7 +191,11 @@ on its original definition.
 @defproc[
 (expand-in-scope [stx syntax?]
   [#:scope sc scope? (current-scope)]
-  [#:stop-at stop (or/c (listof identifier?) #false) #false])
+  [#:stop-at stop (or/c (listof identifier?) #false) 
+   (if (memq (scope-expansion-context sc)
+         '(expression module-begin))
+       #false
+       '())])
 syntax?
 ]{
 
@@ -206,6 +210,18 @@ expansion does not stop, and recurs into subforms.
 @racket[local-expand].  This change is intended to make the behavior of
 @racket[stop] more uniform: any list results in head-expansion, while
 @racket[#false] results in recursive expansion.
+
+}
+
+@defproc[
+(expand-expression-in-scope [stx syntax?]
+  [#:scope sc scope? (current-scope)]
+  [#:stop-at stop (or/c (listof identifier?) #false) #false])
+syntax?
+]{
+
+Like @racket[expand-in-scope], but sets the expansion context to
+@racket['expression] while expanding.
 
 }
 
