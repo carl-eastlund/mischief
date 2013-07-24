@@ -25,8 +25,7 @@
   struct-binding/known
   struct-binding/check
   define-literals/ids
-  require/define-literals/ids
-  syntax-error)
+  require/define-literals/ids)
 
 (require
   (for-syntax
@@ -59,13 +58,6 @@
 
 (define-syntax $!
   (make-rename-transformer #'quote-syntax))
-
-(define (syntax-error stx fmt . args)
-  (raise
-    (exn:fail:syntax
-      (apply format fmt args)
-      (current-continuation-marks)
-      (list/optional stx (current-syntax-context)))))
 
 (define-syntax (syntax-class/c stx)
   (syntax-parse stx

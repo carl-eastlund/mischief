@@ -43,7 +43,8 @@
   rename-transformers
   rename-transformer
   set!-transformer
-  id-transformer)
+  id-transformer
+  (rename-out [wrong-syntax syntax-error]))
 
 (require
   racket/function
