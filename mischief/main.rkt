@@ -42,6 +42,7 @@
 (require/provide-phase-0
   racket
   racket/block
+  racket/generic
   racket/pretty
   racket/syntax
   racket/splicing
