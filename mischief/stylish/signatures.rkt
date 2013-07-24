@@ -11,13 +11,11 @@
   gen:stylish-writable
   stylish-writable?
   generic-stylish-write
-  stylish-writable/c
 
   gen:stylish-printable
   stylish-printable?
   generic-stylish-value->expr
-  generic-stylish-quotable?
-  stylish-printable/c)
+  generic-stylish-quotable?)
 
 (require
   (for-syntax

@@ -34,15 +34,11 @@
   with-stylish-port
 
   gen:stylish-writable
-  stylish-writable?
   generic-stylish-write
-  stylish-writable/c
 
   gen:stylish-printable
-  stylish-printable?
   generic-stylish-value->expr
   generic-stylish-quotable?
-  stylish-printable/c
 
   ;; struct-out will not work here currently:
   stylish-comment-expr
