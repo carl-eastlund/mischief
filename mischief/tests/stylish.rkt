@@ -6,7 +6,7 @@
 
 (module+ test
   (require rackunit/text-ui)
-  (run-tests stylish-test-suite))
+  (void (run-tests stylish-test-suite)))
 
 (module+ main
   (require rackunit/gui)
