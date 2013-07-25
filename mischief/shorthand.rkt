@@ -1,6 +1,7 @@
 #lang racket/base
 
 (provide
+  define-id-shorthand
   define-shorthand
   define-aliases
   define-alias
@@ -12,23 +13,30 @@
     racket/syntax
     syntax/parse))
 
+(define-syntax (define-id-shorthand stx)
+  (syntax-parse stx
+    [(_ name:id template)
+     (syntax/loc stx
+       (define-syntax name
+         (let ([result #'template])
+           (lambda (stx)
+             (syntax-parse stx
+               [(_ . args) (datum->syntax stx (cons result #'args) stx stx)]
+               [_:id result])))))]))
+
 (define-syntax (define-shorthand stx)
   (syntax-parse stx
     [(_ (name:id . pattern) template)
      (syntax/loc stx
-       (define-syntax name
-         (make-set!-transformer
-           (lambda (stx)
-             (syntax-parse stx
-               [(_ . pattern) (syntax/loc stx template)])))))]
+       (define-syntax (name stx)
+         (syntax-parse stx
+           [(_ . pattern) (syntax/loc stx template)])))]
     [(_ name:id [pattern template] ...)
      (syntax/loc stx
-       (define-syntax name
-         (make-set!-transformer
-           (lambda (stx)
-             (syntax-parse stx
-               [pattern (syntax/loc stx template)]
-               ...)))))]))
+       (define-syntax (name stx)
+         (syntax-parse stx
+           [pattern (syntax/loc stx template)]
+           ...)))]))
 
 (define-syntax (define-aliases stx)
   (syntax-parse stx
