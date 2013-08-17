@@ -29,6 +29,26 @@ interpreted as in @racket[syntax-parse].
 ]
 }
 
+@defform[(define-id-shorthand name template)]{
+
+Defines @racket[name] as an identifier macro that expands by replacing
+@racket[name] with @racket[template].
+
+@examples[#:eval shorthand-eval
+(define counter (box 0))
+(define-id-shorthand current (unbox counter))
+(define-id-shorthand increment!
+  (set-box! counter (add1 current)))
+current
+increment!
+current
+increment!
+current
+(current 'bad 'application)
+]
+
+}
+
 @deftogether[(
 @defform[(define-alias id target-id)]
 @defform[(define-aliases [id target-id] ...)]
