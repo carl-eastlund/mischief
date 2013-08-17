@@ -14,6 +14,8 @@
 (require
   racket/list
   racket/dict
+  racket/match
+  mischief/define
   mischief/transform)
 
 (define (bound-identifier-hash-code id
@@ -30,6 +32,12 @@
           [hash-code eq-hash-code]
           #:phase [phase (syntax-local-phase-level)])
   (hash-code (identifier-binding-symbol id phase)))
+
+(define-if-unbound (identifier-binding-symbol id
+                     [phase (syntax-local-phase-level)])
+  (match (identifier-binding id phase)
+    [(list _ sym _ _ _ _ _) sym]
+    [_ (syntax-e id)]))
 
 (define (check-duplicate-label ids)
   (define table (make-label-id-table))
