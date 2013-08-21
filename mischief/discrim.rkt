@@ -131,7 +131,7 @@
     (and (not (empty? x)) (not (cons? x))))
   (define atom-discrim
     (apply union-discrim atom-discrims))
-  (define (innser-sexp-discrim ords)
+  (define (inner-sexp-discrim ords)
     (the-discrim ords))
   (define the-discrim
     (union-discrim
@@ -139,9 +139,9 @@
       atom?
       singleton-discrim
       empty?
-      (cons-discrim innser-sexp-discrim innser-sexp-discrim)
+      (cons-discrim inner-sexp-discrim inner-sexp-discrim)
       cons?))
-  innser-sexp-discrim)
+  inner-sexp-discrim)
 
 (define (natural-length n)
   (quotient (+ (integer-length n) 7) 8))
