@@ -8,6 +8,7 @@
   racket/dict
   racket/promise
   racket/path
+  racket/undefined
   syntax/srcloc
   mischief/boolean
   mischief/define
@@ -570,7 +571,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Convert Undefined
 
-(define undefined (letrec {[undefined undefined]} undefined))
 (define (undefined? x) (eq? x undefined))
 
 (define (convert-undefined x st) (stylish-unprintable-expr 'undefined))
