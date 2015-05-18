@@ -11,6 +11,10 @@
         "srfi-lib"
         "srfi-lite-lib"))
 (define build-deps
-  (list "racket-index"
+  (list "compatibility-doc"
+        "data-doc"
+        "racket-doc"
+        "scribble-doc"
+        "racket-index"
         "rackunit-gui"
         "rackunit-lib"))
