@@ -37,10 +37,10 @@
         (list* 'mod-path ... phase-0-exports)))))
 
 (require/provide-phase-1
-  racket)
+  (except-in racket stream*))
 
 (require/provide-phase-0
-  racket
+  (except-in racket stream*)
   racket/block
   racket/generic
   racket/pretty
