@@ -19,6 +19,8 @@
     syntax/name
     syntax/parse
     mischief/parse)
+  mischief/define
+  racket/function
   racket/promise
   racket/private/norm-arity)
 
@@ -84,13 +86,13 @@
       (lambda (ks vs . xs)
         (keyword-apply (force memo) ks vs xs)))))
 
-(define (disjoin . procs)
+(define-if-unbound (disjoin . procs)
   (make-keyword-procedure
     (lambda (ks vs . xs)
       (for/or {[proc (in-list procs)]}
         (keyword-apply proc ks vs xs)))))
 
-(define (conjoin . procs)
+(define-if-unbound (conjoin . procs)
   (make-keyword-procedure
     (lambda (ks vs . xs)
       (for/and {[proc (in-list procs)]}

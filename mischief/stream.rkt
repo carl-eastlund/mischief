@@ -18,6 +18,7 @@
   racket/list
   racket/stream
   racket/promise
+  mischief/define
   mischief/match
   mischief/boolean
   mischief/shorthand)
@@ -65,9 +66,10 @@
             (loop (sub1 n) (stream-rest streams)
               (cons (stream-rest st) rests)))]))]))
 
-(define-shorthand stream*
-  [(_ st) st]
-  [(_ x . ys) (stream-cons x (stream* . ys))])
+(define-syntax-if-unbound stream*
+  (syntax-parser
+    [(_ st) #'st]
+    [(_ x . ys) #'(stream-cons x (stream* . ys))]))
 
 (define-syntax (define-stream stx)
   (syntax-parse stx
