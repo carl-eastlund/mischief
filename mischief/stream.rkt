@@ -120,6 +120,6 @@
   (stream-interleave*
     (stream-cross-product* f xs ys)))
 
-(define (stream-take st n)
+(define-if-unbound (stream-take st n)
   (for/list {[x (in-stream st)] [i (in-range n)]}
     x))
